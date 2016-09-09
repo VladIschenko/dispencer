@@ -1,0 +1,110 @@
+.wrapper{
+    margin: 0 auto;
+    width: 1000px;
+    border-radius: 20px;
+    background-color: #ffffff;
+    padding: 15px;
+}
+
+.grey {
+    background-color: rgba(95, 95, 95, 0.42);
+    padding-top:20px;
+}
+
+
+
+.top-margin{
+    margin-top: 30px;
+}
+
+.navigate {
+    background-color: #f0ad4e;
+    color: #f7f7f7;
+}
+
+.add-form {
+    width: 120px;
+}
+
+.glyphicon {
+    padding: 3px;
+}
+
+.userlist {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.userlist th {
+    background-color: #0014d2;
+    color:#ffffff;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: none;
+}
+
+.userlist td {
+    border-top:none;
+    /*border-top: none;*/
+}
+
+.userlist tr {
+    border-top: none;
+    /*border-top: none;*/
+}
+
+.table {
+    width:900px;
+}
+.id {
+    background-color:#797979;
+    color:#ffffff;
+}
+
+.table>tbody>tr>td,
+.table>tbody>tr>th,
+.table>tfoot>tr>td,
+.table>tfoot>tr>th,
+.table>thead>tr>td,
+.table>thead>tr>th {
+    border-top:none;
+    vertical-align: middle;
+}
+
+.table>thead>tr>th {
+    border-bottom: none;
+}
+
+.center {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: auto;
+    margin-top: auto;
+}
+
+.error {
+    width:900px;
+    padding: 40px;
+}
+
+.margin-left {
+    margin-left: 5px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,19 @@
+{
+    "name": "root/test1.local",
+    "authors": [
+        {
+            "name": "Ischenko Vlad",
+            "email": "ischenkovlad@yandex.ua"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Controllers\\": "controllers",
+            "Core\\": "core",
+            "Models\\": "models",
+            "Graph\\": "views/templates",
+            "Handler\\": "requestHandler"
+        }
+    }
+}
