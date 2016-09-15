@@ -16,7 +16,7 @@ class View
         extract($data);
         require_once(ROOT . 'views/layouts/header.php');
         require_once('views/templates/' . $file . '.php');
-//        require_once(ROOT . 'views/layouts/footer.php');
+        require_once(ROOT . 'views/layouts/footer.php');
         $renderView = ob_get_clean();
         return $renderView;
     }

@@ -7,6 +7,7 @@ define("IN_PARSER_MODE", "true");
 
 require 'requestHandler/DispenserProcessor.php';
 require 'requestHandler/Crc32.php';
+require 'core/Db.php';
 
 $process = new \Handler\DispenserProcessor();
 

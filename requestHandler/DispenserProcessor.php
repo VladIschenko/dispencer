@@ -3,416 +3,420 @@
 namespace Handler;
 
 use Handler\Crc32;
-use DateTime;
-use Handler\Dispenser;
-use Handler\DispenserFobCycle;
-use Handler\DispenserPart;
-use Models\UserModel;
 use Exception;
+use Core\Db;
+use PDO;
 
-class DispenserProcessor {
-  const CONFIG_MAX_SIZE = 16;
-  const HEADER_MAX_SIZE = 114;
-  const FOB_MAX_SIZE = 64;
-  const CONTENT_START = 4;
-  const CRC_SIZE = 4;
-  const FOB_CYCLES_COUNT = 4;
+class DispenserProcessor
+{
+//  const CONFIG_MAX_SIZE = 16;
+//  const HEADER_MAX_SIZE = 114;
+//  const FOB_MAX_SIZE = 64;
+//  const CONTENT_START = 4;
+//  const CRC_SIZE = 4;
+//  const FOB_CYCLES_COUNT = 4;
 
-  /**
-   * @var Dispenser
-   */
-  private $dispenser;
+    protected $db;
+    //header of data
+    const HEADER_SIZE = 10;
 
-  /**
-   * @var array
-   */
-  private $dispenserParts;
+    const DEVICE_UID = 6;
+    const PACKET_TYPE = 2;
+    const DATA_SIZE = 2;
+    //crc32 for header data
+    const CRC32 = 4;
 
-  /**
-   * @var array
-   */
-  private $fobCycles;
 
-  public function __construct() {
-  }
+    const PACKET = 16;
+    //Structure of one package
+    const EVENT_TYPE = 1;
+    const CHANNEL = 1;
+    const VOLUME = 4;
+    const TIME = 4;
+    const EVENT_UID = 4;
+    const LEASTCRC = 2;
 
-  private function getInput() {
-    // TODO: remove after test
-    //return file_get_contents('input.bin');
 
-    $handle = fopen('php://input', 'r');
 
-    if (!$handle) {
-      return null;
+    private $dispenser;
+
+    public function __construct()
+    {
+        $this->db = Db::connect();
     }
 
-    $content = stream_get_contents($handle);
-    fclose($handle);
-
-    // TODO: remove after test
-    //file_put_contents('input.bin', $content);
-
-    return $content;
-  }
-
-  public function processData() {
-      $input = $this->getInput();
-      echo $input;
-
-//      echo "STRLEN INPUT: " . strlen($input);
-      echo "</br>";
-      echo "</br>";
-      echo "</br>";
-      echo "</br>";
-      echo "</br>";
-
-      $filename = "input.bin";
-      $handle = fopen($filename, "rb");
-      $contents = fread($handle, filesize($filename));
-      fclose($handle);
-      echo "\n" ."CONTENT: " . $contents . "\n";
-      echo "</br>";
-      $data = unpack("C*", $contents);
+    private function getInput()
+    {
+        $handle = fopen('php://input', 'rb');
+        if (!$handle) {
+            return null;
+        }
+        $content = stream_get_contents($handle);
+        fclose($handle);
+        return $content;
+    }
 
 
-      echo "\n" ."DATA: ";
-      foreach($data as $value){
-          echo dechex($value) . " ";
-      }
-      echo "</br>";
-      echo "\n" ."STRLEN CONTENT: " . strlen($contents);
-      echo "</br>";
-      $cont = substr($contents, 10, 4);
-      echo "\n" ."PARSED CONTENT: ";
-      print_r(unpack("C*", $cont));
+    public function processData()
+    {
+        $contents = $this->getInput();
+        echo $contents;
 
-      if (!$input) {
-          header("HTTP/1.1 400 1");
-          return;
-      }
+		/*$filename = "setting.bin";
+        $handle = fopen($filename, "rb");
+        $contents = fread($handle, filesize($filename));
+        fclose($handle);
+//        echo "\n" . "CONTENT: " . $contents . "\n";
+//        echo "</br>";
+        $data = unpack("C*", $contents);
+//        var_dump($data);
 
-      $size = strlen($input);
-      if ($size < self::HEADER_MAX_SIZE + self::CONFIG_MAX_SIZE + self::FOB_MAX_SIZE * 4 +
-          self::CONTENT_START + self::CRC_SIZE) {
-
-          header("HTTP/1.1 400 2");
-          return;
-      }
-
-      $checksum = Crc32::getCrc32($cont);
-      echo "\n" ."CHECKSUM CONTENT: " . $checksum;
-
-      $checksumReceived = unpack('Ncheck', substr($input, -4));
-      if ($checksum != $checksumReceived['check']) {
-          header("HTTP/1.1 400 3");
-          return;
-      }
-
-      $config = substr($input, self::CONTENT_START, self::CONFIG_MAX_SIZE);
-      $header = substr($input, self::CONTENT_START + self::CONFIG_MAX_SIZE, self::HEADER_MAX_SIZE);
-      $data = substr($input, self::CONTENT_START + self::CONFIG_MAX_SIZE + self::HEADER_MAX_SIZE);
-
-      $this->dispenser = new Dispenser();
-
-      $this->processConfig($config);
-      $this->processHeader($header);
-      $this->processFobCycle($data);
-      $this->save();
-  }
+        echo "\n" . "DATA: ";
+        foreach ($this->addZero($data) as $value) {
+            echo $value . " ";
+        }*/
 
 
-    public function processData() {
-        $input = $this->getInput();
+//        echo "\n" . "STRLEN CONTENT: " . strlen($contents);
+        $cont = substr($contents, 0, self::HEADER_SIZE);
+        $checksum = Crc32::getCrc32($cont);
+//        echo dechex($checksum);
+//        echo "\n" . "PARSED CONTENT: ";
+//        print_r((unpack("C*", $cont)));
 
-        if (!$input) {
-            header("HTTP/1.1 400 1");
+
+        if (!$contents) {
+            header("HTTP/1.1 400 The request is empty");
             return;
         }
 
-        $size = strlen($input);
-        if ($size < self::HEADER_MAX_SIZE + self::CONFIG_MAX_SIZE + self::FOB_MAX_SIZE * 4 +
-            self::CONTENT_START + self::CRC_SIZE) {
-            header("HTTP/1.1 400 2");
+        $size = strlen($contents);
+        if ($size < strrev(substr($contents, self::DEVICE_UID + self::PACKET_TYPE, self::DATA_SIZE))) {
+            header("HTTP/1.1 400 Incorrect data size");
             return;
         }
 
-        $checksum = Crc32::getCrc32(substr($input, 0, 10));
+        $checksumReceived = unpack('Ncheck', strrev(substr($contents, self::HEADER_SIZE, self::CRC32)));
+//        print_r($checksumReceived);
 
-        $checksumReceived = unpack('Ncheck', substr($input, 10, 4));
         if ($checksum != $checksumReceived['check']) {
-            header("HTTP/1.1 400 3");
+            header("HTTP/1.1 400 Ñhecksum does not match");
             return;
         }
 
-        $config = substr($input, self::CONTENT_START, self::CONFIG_MAX_SIZE);
-        $header = substr($input, self::CONTENT_START + self::CONFIG_MAX_SIZE, self::HEADER_MAX_SIZE);
-        $data = substr($input, self::CONTENT_START + self::CONFIG_MAX_SIZE + self::HEADER_MAX_SIZE);
+//        $config = substr($input, self::CONTENT_START, self::CONFIG_MAX_SIZE);
+//        $header = substr($input, self::CONTENT_START + self::CONFIG_MAX_SIZE, self::HEADER_MAX_SIZE);
+//        $data = substr($input, self::CONTENT_START + self::CONFIG_MAX_SIZE + self::HEADER_MAX_SIZE);
 
-        $this->dispenser = new Dispenser();
+        $header = substr($contents, 0, self::HEADER_SIZE);
+        $data = substr($contents, self::HEADER_SIZE + self::CRC32);
 
-        $this->processConfig($config);
-        $this->processHeader($header);
-        $this->processFobCycle($data);
-        $this->save();
+
+
+        $this->processPackage($header,$data);
+//        $headerData = $this->processHeader($header);
+//        $logsData = $this->processLogs($logs);
+//        $this->saveLogs($headerData, $logsData);
+//      $this->processFobCycle($data);
+//      $this->save();
     }
 
 
-  /**
-   *
-   * @param string $config Binary string
-   */
-  private function processConfig($config) {
-    $keys = array('partsCount' => 'C');
 
-    $unpackString = self::constructUnpackString($keys);
-    $configData = unpack($unpackString, $config);
 
-    if ($configData['partsCount']) {
-      $this->dispenser->setPartsCount(2);
-      $this->dispenserParts = array(new DispenserPart(), new DispenserPart());
 
-      $this->dispenserParts[1]->setIndex(2);
-    } else {
-      $this->dispenser->setPartsCount(1);
-      $this->dispenserParts = array(new DispenserPart());
+
+
+
+    //fix bug with encode maybe useless at hosting
+    public function addZero($data)
+    {
+        $size = count($data) + 1;
+        for($i = 1; $i < $size; $i++)
+        {
+            $search = array('0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f');
+            $replace = array('00','01','02','03','04','05','06','07','08','09','0a','0b','0c','0d','0e','0f');
+            $data[$i] = dechex($data[$i]);
+            if(strlen($data[$i]) < 2){
+                $data[$i] = str_replace($search, $replace, $data[$i]);
+            }
+        }
+        return $data;
     }
+    //end fix
 
-    $this->dispenserParts[0]->setIndex(1);
-  }
 
-  private static function constructUnpackString($formatKeys) {
-    $unpackString = array();
+    //FOR PROCESSING DATA
+    public function processSetting($data)
+    {
+        $setting = substr($data,0,49);
+        $setting = $this->addZero(unpack("C*", $setting));
+//        var_dump($setting);
 
-    foreach ($formatKeys as $key => $value) {
-      if (is_int($key)) {
-        $unpackString[] = $value;
-      } else {
-        $unpackString[] = $value . $key;
-      }
+        $hwConfig = $this->processHwConfig(implode("", array_slice($setting, 0, 1)));
+        $sensor1_threshold = hexdec(implode("", array_slice($setting, 1, 1)));
+        $sensor2_threshold = hexdec(implode("", array_slice($setting, 2, 1)));
+        $startVolume1 = hexdec(implode("", array_reverse(array_slice($setting, 3, 2))));
+        $startVolume2 = hexdec(implode("", array_reverse(array_slice($setting, 5, 2))));
+        $startVolume3 = hexdec(implode("", array_reverse(array_slice($setting, 7, 2))));
+        $endVolume1 = hexdec(implode("", array_reverse(array_slice($setting, 9, 2))));
+        $endVolume2 = hexdec(implode("", array_reverse(array_slice($setting, 11, 2))));
+        $endVolume3 = hexdec(implode("", array_reverse(array_slice($setting, 13, 2))));
+        $cleanserVolume1 = hexdec(implode("", array_reverse(array_slice($setting, 15, 2))));
+        $cleanserVolume2 = hexdec(implode("", array_reverse(array_slice($setting, 17, 2))));
+        $cleanserVolume3 = hexdec(implode("", array_reverse(array_slice($setting, 19, 2))));
+        $cleanserDelay1 = hexdec(implode("", array_reverse(array_slice($setting, 21, 2))));
+        $cleanserDelay2 = hexdec(implode("", array_reverse(array_slice($setting, 23, 2))));
+        $cleanserDelay3 = hexdec(implode("", array_reverse(array_slice($setting, 25, 2))));
+        $concentrateVolume = hexdec(implode("", array_reverse(array_slice($setting, 27, 2))));
+        $waterMixVol = hexdec(implode("", array_reverse(array_slice($setting, 29, 2))));
+        $flowSpeedMin = hexdec(implode("", array_reverse(array_slice($setting, 31, 2))));
+        $flowFactor1 = hexdec(implode("", array_reverse(array_slice($setting, 33, 2))));
+        $flowFactor2 = hexdec(implode("", array_reverse(array_slice($setting, 35, 2))));
+        $flowFactor3 = hexdec(implode("", array_reverse(array_slice($setting, 37, 2))));
+        $flowFactor4 = hexdec(implode("", array_reverse(array_slice($setting, 39, 2))));
+        $minInerval = hexdec(implode("", array_reverse(array_slice($setting, 41, 2))));
+        $maxInterval = hexdec(implode("", array_reverse(array_slice($setting, 43, 2))));
+        $time = hexdec(implode("", array_reverse(array_slice($setting, 45, 4))));
+        $time = date('Y-m-d h:i:s', $time);
+
+        $setting=array(
+            'hw_config' => $hwConfig,
+            'sensor_1' => $sensor1_threshold,
+            'sensor_2' => $sensor2_threshold,
+            'start_volume_1' => $startVolume1,
+            'start_volume_2' => $startVolume2,
+            'start_volume_3' => $startVolume3,
+            'end_volume_1' => $endVolume1,
+            'end_volume_2' => $endVolume2,
+            'end_volume_3' => $endVolume3,
+            'cleanser_volume_1' => $cleanserVolume1,
+            'cleanser_volume_2' => $cleanserVolume2,
+            'cleanser_volume_3' => $cleanserVolume3,
+            'cleanser_delay_1' => $cleanserDelay1,
+            'cleanser_delay_2' => $cleanserDelay2,
+            'cleanser_delay_3' => $cleanserDelay3,
+            'concentrate_volume' => $concentrateVolume,
+            'water_mix_volume' => $waterMixVol,
+            'flow_speed_min' => $flowSpeedMin,
+            'flowmeter_performance_1' => $flowFactor1,
+            'flowmeter_performance_2' => $flowFactor2,
+            'flowmeter_performance_3' => $flowFactor3,
+            'flowmeter_performance_4' => $flowFactor4,
+            'sanitization_min_interval' => $minInerval,
+            'sanitization_max_interval' => $maxInterval,
+            'time' => $time,
+        );
+
+		//var_dump($setting);
+
+        return $setting;
     }
-    $result = implode('/', $unpackString);
-    echo $result;
-      return $result;
-  }
+    public function processPackage($header, $data)
+    {
+        $device_uid = $this->addZero(unpack("C*", substr($header, 0, self::DEVICE_UID)));
+        $packet_type = $this->addZero(unpack("C*", strrev(substr($header, self::DEVICE_UID, self::PACKET_TYPE))));
+        $data_size = array_reverse($this->addZero(unpack("C*", (substr($header, self::DEVICE_UID + self::PACKET_TYPE, self::DATA_SIZE)))));
 
-  /**
-   *
-   * @param string $header Binary string
-   */
-  private function processHeader($header) {
-    if ($this->dispenser->getPartsCount() == 1) {
-      $keys = array('fill' => 'N3',
-        -1 => 'N5',
-        'fobCycles' => 'N', 'beerPoured' => 'N',
-        'lastFlashPage' => 'N',
-        -2 => 'N2',
-        'id' => 'a16',
-        -3 => 'n',
-        'lifetime' => 'N', -4 => 'N',
-        'uid' => 'H32',
-        'previousLifetime' => 'N');
-    } else {
-      $keys = array('fill' => 'N3',
-        'fill_right' => 'N3',
-        -1 => 'N2',
-        'fobCycles' => 'N', 'beerPoured' => 'N',
-        'lastFlashPage' => 'N',
-        'fobCycles_right' => 'N', 'beerPoured_right' => 'N',
-        'id' => 'a16',
-        -2 => 'n',
-        'lifetime' => 'N', 'lifetime_right' => 'N',
-        'uid' => 'H32',
-        'previousLifetime' => 'N', 'previousLifetime_right' => 'N');
-    }
+        $device_uid = implode("-", $device_uid);
+        $packet_type = dechex(implode("", $packet_type));
+        $data_size = hexdec(implode("", $data_size));
 
-    $unpackString = self::constructUnpackString($keys);
-    $headerData = unpack($unpackString, $header);
+        $header=array(
+            'device_uid' => $device_uid,
+            'packet_type' => $packet_type,
+            'data_size' => $data_size
+        );
 
-    $part = $this->dispenserParts[0];
-
-    $part->setFill1(self::getUnsignedString($headerData['fill1']));
-    $part->setFill2(self::getUnsignedString($headerData['fill2']));
-    $part->setFill3(self::getUnsignedString($headerData['fill3']));
-
-    $part->setFobCycles(self::getUnsignedString($headerData['fobCycles']));
-    $part->setBeerPoured(self::getUnsignedString($headerData['beerPoured']));
-
-    $part->setLifetime(self::getUnsignedString($headerData['lifetime']));
-    $part->setPreviousLifeTime(self::getUnsignedString($headerData['previousLifetime']));
-
-    $this->dispenser->setDispenserId($headerData['id']);
-    $this->dispenser->setUniqueId($headerData['uid']);
-
-    if ($this->dispenser->getPartsCount() == 2) {
-      $part = $this->dispenserParts[1];
-
-      $part->setFill1(self::getUnsignedString($headerData['fill_right1']));
-      $part->setFill2(self::getUnsignedString($headerData['fill_right2']));
-      $part->setFill3(self::getUnsignedString($headerData['fill_right3']));
-
-      $part->setFobCycles(self::getUnsignedString($headerData['fobCycles_right']));
-      $part->setBeerPoured(self::getUnsignedString($headerData['beerPoured_right']));
-
-      $part->setLifetime(self::getUnsignedString($headerData['lifetime_right']));
-      $part->setPreviousLifeTime(self::getUnsignedString($headerData['previousLifetime_right']));
-    }
-  }
-
-  /**
-   *
-   * @param string $data Binary string
-   */
-  private function processFobCycle($data) {
-    $keys = array('fill' => 'C3',
-        'prime' => 'n', 'top' => 'n', 'foam' => 'n', 'stop' => 'n',
-        'primeVolume' => 'n', 'beerVolume' => 'n',
-        'fobCycleCount' => 'N',
-        'hours' => 'C', 'minutes' => 'C', 'seconds' => 'C',
-        'day' => 'C', 'month' => 'C', 'year' => 'C',
-        'side_units' => 'C',
-        'flowFactor' => 'n',
-        'start_hours' => 'C', 'start_minutes' => 'C', 'start_seconds' => 'C',
-        'start_day' => 'C', 'start_month' => 'C', 'start_year' => 'C',
-        'keg_id' => 'H32', 'gps' => 'H20');
-
-    $unpackString = self::constructUnpackString($keys);
-
-    $this->fobCycles = array();
-
-    for ($i = 0; $i < self::FOB_CYCLES_COUNT; ++$i) {
-      $dataPart = substr($data, $i * self::FOB_MAX_SIZE, self::FOB_MAX_SIZE);
-      $fobCycleData = unpack($unpackString, $dataPart);
-
-      if ($fobCycleData['side_units'] == 0
-        || $fobCycleData['side_units'] == 0xFF) {
-        continue;
-      }
-
-      $fobCycle = new DispenserFobCycle();
-
-      $fobCycle->setFill1($fobCycleData['fill1']);
-      $fobCycle->setFill2($fobCycleData['fill2']);
-      $fobCycle->setFill3($fobCycleData['fill3']);
-
-      $fobCycle->setPrime($fobCycleData['prime']);
-      $fobCycle->setTop($fobCycleData['top']);
-      $fobCycle->setFoam($fobCycleData['foam']);
-      $fobCycle->setStop($fobCycleData['stop']);
-
-      $fobCycle->setPrimeVolume($fobCycleData['primeVolume']);
-      $fobCycle->setBeerVolume($fobCycleData['beerVolume']);
-
-      $fobCycle->setFobCycleCount(self::getUnsignedString($fobCycleData['fobCycleCount']));
-
-      try {
-        $dateTime = new DateTime(sprintf('%u-%u-%u %u:%u:%u', $fobCycleData['start_year'] + 2000, $fobCycleData['start_month'], $fobCycleData['start_day'],
-          $fobCycleData['start_hours'], $fobCycleData['start_minutes'], $fobCycleData['start_seconds']));
-        $fobCycle->setStartDateTime($dateTime);
-      } catch (Exception $ex) {
-        $fobCycle->setStartDateTime(new DateTime('1970-01-01 00:00:00'));
-      }
-
-      try {
-        $dateTime = new DateTime(sprintf('%u-%u-%u %u:%u:%u', $fobCycleData['year'] + 2000, $fobCycleData['month'], $fobCycleData['day'],
-          $fobCycleData['hours'], $fobCycleData['minutes'], $fobCycleData['seconds']));
-        $fobCycle->setEndDateTime($dateTime);
-      } catch (Exception $ex) {
-        $fobCycle->setEndDateTime(new DateTime('1970-01-01 00:00:00'));
-      }
-
-      $fobCycle->setUnitId($fobCycleData['side_units'] & 0x0F);
-      // Not real id, just temporary index
-      $fobCycle->setDispenserPartId((($fobCycleData['side_units'] & 0xF0) >> 4));
-
-      $fobCycle->setFlowFactor($fobCycleData['flowFactor']);
-
-      $fobCycle->setKegId($fobCycleData['keg_id']);
-      $this->dispenser->setGpsData($fobCycleData['gps']);
-
-      $this->fobCycles[] = $fobCycle;
-    }
-
-    if (count($this->fobCycles)) {
-      $this->dispenser->setUnitId($this->fobCycles[0]->getUnitId());
-    }
-  }
-
-  private function save() {
-    $idResult = $this->api->getColumnsData('d.id AS dispenser_id, dp.id AS part_id',
-      'beer_dispenser d LEFT JOIN beer_dispenser_part dp ON d.id = dp.dispenser_id',
-      'd.unique_id = ' . '0x' . $this->dispenser->getUniqueId() . ' ORDER BY dp.index');
-
-    //var_dump($this->dispenser, $this->dispenserParts, $fobCycle);
-
-    $n = count($idResult);
-    if ($n) {
-      $this->dispenser->setId($idResult[0]['dispenser_id']);
-
-      $n = min(count($this->dispenserParts), $n);
-      for ($i = 0; $i < $n; ++$i) {
-        $this->dispenserParts[$i]->setId($idResult[$i]['part_id']);
-        $this->dispenserParts[$i]->setDispenserId($this->dispenser->getId());
-      }
-
-      //TODO: add transaction when on InnoDB
-      foreach ($this->fobCycles as $fobCycle) {
-        if (!isset($this->dispenserParts[$fobCycle->getDispenserPartId()])) {
-          continue;
+        if($header['packet_type'] == 1)
+        {
+            $data = $this->processLogs($data);
+            $this->saveLogs($header, $data);
+        }elseif ($header['packet_type'] == 2)
+        {
+            $data = $this->processSetting($data);
+            $this->saveSetting($header, $data);
         }
 
-        $fobCycle->setDispenserPartId($this->dispenserParts[$fobCycle->getDispenserPartId()]->getId());
-
-        $values = array('fill1' => $fobCycle->getFill1(),
-          'fill2' => $fobCycle->getFill2(),
-          'fill3' => $fobCycle->getFill3(),
-          'prime' => $fobCycle->getPrime(), 'top' => $fobCycle->getTop(),
-          'foam' => $fobCycle->getFoam(), 'stop' => $fobCycle->getStop(),
-          'prime_volume' => $fobCycle->getPrimeVolume(),
-          'beer_volume' => $fobCycle->getBeerVolume(),
-          'fob_cycle_count' => $fobCycle->getFobCycleCount(),
-          'start' => $fobCycle->getStartDateTime()->format('Y-m-d H:i:s'),
-          'end' => $fobCycle->getEndDateTime()->format('Y-m-d H:i:s'),
-          'dispenser_part_id' => $fobCycle->getDispenserPartId(),
-          'unit_id' => $fobCycle->getUnitId(),
-          'flow_factor' => $fobCycle->getFlowFactor(),
-          'keg_id' => '0x' . $fobCycle->getKegId());
-
-        $fields = implode(',', array_keys($values));
-        $values['start'] = "'" . $values['start'] . "'";
-        $values['end'] = "'" . $values['end'] . "'";
-        $fieldValues = implode(',', $values);
-
-        $this->db->query("INSERT INTO beer_fob_cycle($fields) VALUES($fieldValues)");
-      }
-
-      if ($this->dispenser->getUnitId() !== null) {
-        $values = array('parts_count' => $this->dispenser->getPartsCount(),
-          'unit_id' => $this->dispenser->getUnitId(),
-          'user_dispenser_id' => $this->dispenser->getDispenserId());
-
-        $this->api->update($values, 'beer_dispenser', 'id = ' . $this->dispenser->getId());
-      }
-
-      for ($i = 0; $i < $n; ++$i) {
-        $values = array('fill1' => $this->dispenserParts[$i]->getFill1(),
-          'fill2' => $this->dispenserParts[$i]->getFill2(),
-          'fill3' => $this->dispenserParts[$i]->getFill3(),
-          'fob_cycles' => $this->dispenserParts[$i]->getFobCycles(),
-          'beer_poured' => $this->dispenserParts[$i]->getBeerPoured(),
-          'lifetime' => $this->dispenserParts[$i]->getLifeTime(),
-          'previous_lifetime' => $this->dispenserParts[$i]->getPreviousLifeTime());
-
-        $this->api->update($values, 'beer_dispenser_part', 'id = ' . $this->dispenserParts[$i]->getId());
-      }
-
-      // TODO: check query results
-      header("HTTP/1.1 201");
-    } else {
-      header("HTTP/1.1 400 4");
+        return $header;
     }
-  }
 
-  private static function getUnsignedString($number) {
-    return sprintf('%u', $number);
-  }
+    public function processLogs($data)
+    {
+        $packets = str_split($data, self::PACKET);
+        $crcForPacket = array();
+        $config = array();
+
+        for($i=0; $i < count($packets); $i++)
+        {
+            $crc[$i] = substr($packets[$i], 0, 14);
+            $crcForPacket[$i] = dechex(Crc32::getCrc32($crc[$i]));
+        }
+
+        $logs = $this->addZero(unpack("C*", $data));
+        $logs = array_chunk($logs, self::PACKET);
+
+        for($i=0;$i<count($logs);$i++)
+        {
+            if($crcForPacket[$i] == '245a4225') //245a4225 is crc32 for empty packet like ff ff ff
+            {
+				header("HTTP/1.1 400 The empty packet");
+            }elseif(count($logs[$i]) < self::PACKET){
+				//header("HTTP/1.1 400 Wrong size of packet");
+        }else {
+                $leastCrc = implode("", array_reverse(array_slice($logs[$i], 14, self::LEASTCRC)));
+
+                if($leastCrc == substr($crcForPacket[$i], -4))
+                {
+                    $event_type = $this->processEventType(implode("", array_slice($logs[$i], 0, self::EVENT_TYPE)));
+                    $channel = $this->processChannel(implode("", array_slice($logs[$i], 1, self::CHANNEL)));
+                    $volume = hexdec(implode("", array_reverse(array_slice($logs[$i], 2, self::VOLUME))));
+                    $time = hexdec(implode("", array_reverse(array_slice($logs[$i], 6, self::TIME))));
+                    $time = date('Y-m-d h:i:s', $time);
+                    $event_uid = hexdec(implode("", array_reverse(array_slice($logs[$i], 10, self::EVENT_UID))));
+                    echo $event_uid;
+
+                    $config[$i]=array(
+                        'event_type' => $event_type,
+                        'channel' => $channel,
+                        'volume' => $volume,
+                        'time' => $time,
+                        'event_uid' => $event_uid,
+                    );
+                }else{
+                    header("HTTP/1.1 400 Wrong crc for packet");
+                }
+            }
+        }
+		//var_dump($config);
+        return $config;
+    }
+    //END FOR PROCESSING DATA
+
+
+    //FOR SAVING DATA
+    public function saveLogs($header, $logs)
+    {
+        $now = date("Y-m-d H:i:s");
+//        var_dump($logs);
+        for($i=0;$i<count($logs);$i++)
+        {
+            $stmt = $this->db->prepare("INSERT INTO logs(type, channel,
+ volume, time, device_id, event_uid, created_at)
+ values (?,?,?,?,?,?,?)");
+            $result = $stmt->execute(
+                array(
+                    $logs[$i]['event_type'],
+                    $logs[$i]['channel'],
+                    $logs[$i]['volume'],
+                    $logs[$i]['time'],
+                    $header['device_uid'],
+                    $logs[$i]['event_uid'],
+                    $now)
+            );
+        }
+    }
+
+    public function saveSetting($header, $setting)
+    {
+        $now = date("Y-m-d H:i:s");
+
+        $stmt = $this->db->prepare("INSERT INTO options(device_id, hw_config,
+ sensor_1, sensor_2, start_volume_1, start_volume_2, start_volume_3, end_volume_1,
+ end_volume_2, end_volume_3, cleanser_volume_1, cleanser_volume_2, cleanser_volume_3,
+ cleanser_delay_1, cleanser_delay_2, cleanser_delay_3, concentrate_volume, water_mix_volume,
+ flow_speed_min, 	flowmeter_performance_1, 	flowmeter_performance_2, 	flowmeter_performance_3,
+ flowmeter_performance_4, sanitization_min_interval, sanitization_max_interval, time, created_at)
+ values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        $result = $stmt->execute(
+            array(
+                $header['device_uid'],
+                $setting['hw_config'],
+                $setting['sensor_1'],
+                $setting['sensor_2'],
+                $setting['start_volume_1'],
+                $setting['start_volume_2'],
+                $setting['start_volume_3'],
+                $setting['end_volume_1'],
+                $setting['end_volume_2'],
+                $setting['end_volume_3'],
+                $setting['cleanser_volume_1'],
+                $setting['cleanser_volume_2'],
+                $setting['cleanser_volume_3'],
+                $setting['cleanser_delay_1'],
+                $setting['cleanser_delay_2'],
+                $setting['cleanser_delay_3'],
+                $setting['concentrate_volume'],
+                $setting['water_mix_volume'],
+                $setting['flow_speed_min'],
+                $setting['flowmeter_performance_1'],
+                $setting['flowmeter_performance_2'],
+                $setting['flowmeter_performance_3'],
+                $setting['flowmeter_performance_4'],
+                $setting['sanitization_min_interval'],
+                $setting['sanitization_max_interval'],
+                $setting['time'],
+                $now)
+        );
+        var_dump($result);
+    }
+    //END FOR SAVING DATA
+
+    //FOR ENUM DATA
+    public function processEventType($typeCode)
+    {
+        $types = array(
+            'EV_FLUSHING_BEGIN' => '01',
+            'EV_FLUSHING_COMPLETE' => '02',
+            'EV_SANIT_BEGIN' => '03',
+            'EV_SANIT_STAGE1_COMPLETE' => '04',
+            'EV_SANIT_STAGE2_COMPLETE' => '05',
+            'EV_SANIT_STAGE3_COMPLETE' => '06',
+
+            'EV_ERR_WATER_LEVEL_LO' => '07',
+            'EV_ERR_WATER_NO_DATA' => '08',
+            'EV_ERR_WATER_LEVEL_OK' => '09',
+
+            'EV_ERR_CLEANSER_LEVEL_LO' => '0a',
+            'EV_ERR_CLEANSER_NO_DATA' => '0b',
+            'EV_ERR_CLEANSER_LEVEL_OK' => '0c',
+            'EV_ERR_CLEANSER_LEVEL_HI' => '0d',
+
+            'EV_ERR_CONCENTR_LEVEL_LO' => '0e',
+            'EV_ERR_CONCENTR_NO_DATA' => '0f',
+            'EV_ERR_CONCENTR_LEVEL_OK' => '10',
+
+            'EV_ERR_FLOW_LOW' => '11',
+
+            'EV_ERRORS_CLEARED' => '12',
+            'EV_STOP_PRESSED' => '13',
+
+            'EV_BEER_FLOWMETER' => '14',
+            );
+        $type = array_search($typeCode, $types);
+        return $type;
+    }
+
+    public function processHwConfig($congifNumber)
+    {
+        $hwConfigs = array(
+            'HW_BASE' => '00',
+            'HW_PLUMBING' => '01',
+            'HW_MIXER_!FM' => '02',
+            'HW_MIXER_4FM' => '03',
+        );
+        $number = array_search($congifNumber, $hwConfigs);
+        return $number;
+    }
+    public function processChannel($chanelNumber)
+    {
+        $numbers = array(
+            '1' => '00',
+            '2' => '01',
+            '3' => '02',
+        );
+        $number = array_search($chanelNumber, $numbers);
+        return $number;
+    }
+    //END FOR ENUM DATA
 }

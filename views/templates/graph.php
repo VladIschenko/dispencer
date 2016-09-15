@@ -18,15 +18,6 @@ $data = $device->processStats();
         <?php echo $device::$endDate ?> для устройства с ID <?php echo $device::$deviceId ?> </legend>
 </div>
 
-</div>
-</div>
-</body>
-<!--<footer class="footer">-->
-<!--    <div class="container">-->
-<!--        <p class="text-muted">&copy; 2016 Vlad Ischenko</p>-->
-<!--    </div>-->
-<!--</footer>-->
-</html>
 
 <script type="text/javascript">
 
