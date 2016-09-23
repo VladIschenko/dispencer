@@ -62,10 +62,6 @@
 <!--</div>-->
 <!--</div>-->
 
-
-
-
-
 <div class="row">
     <!--  page header -->
     <div class="col-lg-12">
@@ -98,6 +94,17 @@
                                         <input name="repeat_password" type="password" class="form-control" />
                                     </div>
                                     <div class="form-group">
+                                        <label>Тип пользователя</label>
+                                        <select name="group" size="1" class="form-control">
+                                            <option selected="selected">god</option>
+                                            <option>superadmin</option>
+                                            <option>admin</option>
+                                            <option>technician</option>
+                                            <option>superuser</option>
+                                            <option>user</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
                                         <label>Электронный адрес</label>
                                         <input name="email" type="text" class="form-control" />
                                     </div>
@@ -112,6 +119,10 @@
                                     <div class="form-group">
                                         <label>Описание</label>
                                         <input name="description" type="text" class="form-control" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Организация</label>
+                                        <input name="organisation" type="text" class="form-control" />
                                     </div>
                                     <div class="form-group">
                                         <label>Телефон</label>

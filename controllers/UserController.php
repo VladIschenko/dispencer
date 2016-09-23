@@ -28,7 +28,7 @@ class UserController
         $this->password = $password;
     }
 
-    public static function checkUsertype()
+    public static function checkUserType()
     {
         $user = new UserModel();
         $id = $user->getIdByLogin($_SESSION['login']);
@@ -38,12 +38,12 @@ class UserController
 
     public static function saveUser()
     {
-        if (UserController::checkUsertype() == self::SUPERADMIN)
-        {
-            $roleForAdding = self::ADMIN;
-        } elseif (UserController::checkUsertype() == self::ADMIN){
-            $roleForAdding = self::USER;
-        }
+//        if (UserController::checkUsertype() == self::SUPERADMIN)
+//        {
+//            $roleForAdding = self::ADMIN;
+//        } elseif (UserController::checkUsertype() == self::ADMIN){
+//            $roleForAdding = self::USER;
+//        }
         $user = new UserModel();
         if ($user->usernameExists($_POST['login'])) {
             echo "user exist";
@@ -56,11 +56,13 @@ class UserController
                 $user->setFirstName($_POST['firstname']);
                 $user->setLastname($_POST['lastname']);
                 $user->setDescription($_POST['description']);
+                $user->setOrganisation($_POST['organisation']);
                 $user->setPhone($_POST['phone']);
                 $user->setMeasurement($_POST['measurement']);
                 $user->setLanguage($_POST['lang']);
+                $user->setGroupName($_POST['group']);
 //              $user->checkIsValidForRegister();
-                $user->save($roleForAdding);
+                $user->save();
             }
         }
         header('Location: /userlist');
@@ -68,9 +70,13 @@ class UserController
 
     public static function deleteProfile($id)
     {
-        $user = new UserModel();
-        $user->delete($id);
-        header('Location: /userlist');
+        if($_SESSION['id'] == $id){
+            echo "Вы не можете удалить свой аккаунт";
+        }else{
+            $user = new UserModel();
+            $user->delete($id);
+            header('Location: /userlist');
+        }
     }
 
     public static function updateProfile($id)
@@ -96,7 +102,7 @@ class UserController
         if(!isset($_SESSION['login']))
         {
             $view = new View();
-            echo $view->render('errors/denied');
+            echo $view->render('errors/unauthorized');
         } else {
             $user = new UserModel();
             $user = $user->findUserbyId($id);
@@ -109,7 +115,7 @@ class UserController
         if(!isset($_SESSION['login']))
         {
             $view = new View();
-            echo $view->render('errors/denied');
+            echo $view->render('errors/unauthorized');
         } else {
             $user = new UserModel();
             $user = $user->findUserbyId($id);
@@ -122,7 +128,7 @@ class UserController
         if(!isset($_SESSION['login']))
         {
             $view = new View();
-            echo $view->render('errors/denied');
+            echo $view->render('errors/unauthorized');
         } else {
             $user = new UserModel();
             $userlist = $user->findAll();
@@ -134,7 +140,7 @@ class UserController
     {
         if(!isset($_SESSION['login'])){
             $view = new View();
-            echo $view->render('errors/denied');
+            echo $view->render('errors/unauthorized');
         }else{
             $view = new View();
             echo $view->render('addUser');
@@ -159,6 +165,9 @@ class UserController
             $user->isValidUser($_POST['login'], $_POST['password'])) {
             $_SESSION['login'] = $_POST['login'];
             $_SESSION['id'] = UserModel::getIdByLogin($_SESSION['login']);
+            $type = self::checkUserType();
+            $_SESSION['type'] = $type;
+            echo $_SESSION['type'];
             if (!empty($_SESSION['login'])) {
                 header('Location: /');
             }
@@ -169,6 +178,15 @@ class UserController
     {
         session_destroy();
         unset($_SESSION['login']);
-        header('Location: http://beerbook.local/');
+        header('Location: /');
     }
+
+    public static function test()
+    {
+        $user = new UserModel();
+        $id = $user->getIdByLogin($_SESSION['login']);
+        $action = 'viewAllUsers';
+        echo $user->checkPermission($id, $action);
+    }
+
 }

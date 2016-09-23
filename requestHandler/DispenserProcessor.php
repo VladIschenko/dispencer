@@ -18,11 +18,10 @@ class DispenserProcessor
 
     protected $db;
     //header of data
-    const HEADER_SIZE = 10;
+    const HEADER_SIZE = 8;
 
     const DEVICE_UID = 6;
     const PACKET_TYPE = 2;
-    const DATA_SIZE = 2;
     //crc32 for header data
     const CRC32 = 4;
 
@@ -59,10 +58,9 @@ class DispenserProcessor
 
     public function processData()
     {
-        $contents = $this->getInput();
-        echo $contents;
-
-		/*$filename = "setting.bin";
+//        $contents = $this->getInput();
+//        echo $contents;
+		$filename = "input (7).bin";
         $handle = fopen($filename, "rb");
         $contents = fread($handle, filesize($filename));
         fclose($handle);
@@ -70,55 +68,42 @@ class DispenserProcessor
 //        echo "</br>";
         $data = unpack("C*", $contents);
 //        var_dump($data);
+//
+//
+//        echo "\n" . "DATA: ";
+//        foreach ($this->addZero($data) as $value) {
+//            echo $value . " ";
+//        }
 
-        echo "\n" . "DATA: ";
-        foreach ($this->addZero($data) as $value) {
-            echo $value . " ";
-        }*/
+//        if(isset($_SESSION['count'])){
+//            $this->updateFirmware($_SESSION['header']);
+//        }
 
 
-//        echo "\n" . "STRLEN CONTENT: " . strlen($contents);
         $cont = substr($contents, 0, self::HEADER_SIZE);
         $checksum = Crc32::getCrc32($cont);
-//        echo dechex($checksum);
-//        echo "\n" . "PARSED CONTENT: ";
-//        print_r((unpack("C*", $cont)));
-
 
         if (!$contents) {
             header("HTTP/1.1 400 The request is empty");
             return;
         }
 
-        $size = strlen($contents);
-        if ($size < strrev(substr($contents, self::DEVICE_UID + self::PACKET_TYPE, self::DATA_SIZE))) {
-            header("HTTP/1.1 400 Incorrect data size");
-            return;
-        }
+//        $size = strlen($contents);
+//        if ($size < strrev(substr($contents, self::DEVICE_UID + self::PACKET_TYPE, self::DATA_SIZE))) {
+//            header("HTTP/1.1 400 Incorrect data size");
+//            return;
+//        }
 
         $checksumReceived = unpack('Ncheck', strrev(substr($contents, self::HEADER_SIZE, self::CRC32)));
-//        print_r($checksumReceived);
 
-        if ($checksum != $checksumReceived['check']) {
-            header("HTTP/1.1 400 Ñhecksum does not match");
-            return;
-        }
-
-//        $config = substr($input, self::CONTENT_START, self::CONFIG_MAX_SIZE);
-//        $header = substr($input, self::CONTENT_START + self::CONFIG_MAX_SIZE, self::HEADER_MAX_SIZE);
-//        $data = substr($input, self::CONTENT_START + self::CONFIG_MAX_SIZE + self::HEADER_MAX_SIZE);
+//        if ($checksum != $checksumReceived['check']) {
+//            header("HTTP/1.1 400 Checksum does not match");
+//            return;
+//        }
 
         $header = substr($contents, 0, self::HEADER_SIZE);
         $data = substr($contents, self::HEADER_SIZE + self::CRC32);
-
-
-
         $this->processPackage($header,$data);
-//        $headerData = $this->processHeader($header);
-//        $logsData = $this->processLogs($logs);
-//        $this->saveLogs($headerData, $logsData);
-//      $this->processFobCycle($data);
-//      $this->save();
     }
 
 
@@ -212,33 +197,118 @@ class DispenserProcessor
 
         return $setting;
     }
-    public function processPackage($header, $data)
+
+    public function updateFirmware($header)
     {
-        $device_uid = $this->addZero(unpack("C*", substr($header, 0, self::DEVICE_UID)));
-        $packet_type = $this->addZero(unpack("C*", strrev(substr($header, self::DEVICE_UID, self::PACKET_TYPE))));
-        $data_size = array_reverse($this->addZero(unpack("C*", (substr($header, self::DEVICE_UID + self::PACKET_TYPE, self::DATA_SIZE)))));
+        header("Expires:");
+        header("Cache-Control:");
 
-        $device_uid = implode("-", $device_uid);
-        $packet_type = dechex(implode("", $packet_type));
-        $data_size = hexdec(implode("", $data_size));
+        $filename = "firmware.bin";
+        $handle = fopen($filename, "rb");
+        $contents = fread($handle, filesize($filename));
+        fclose($handle);
 
-        $header=array(
-            'device_uid' => $device_uid,
-            'packet_type' => $packet_type,
-            'data_size' => $data_size
-        );
-
-        if($header['packet_type'] == 1)
+        if(!isset($_SESSION['header']))
         {
-            $data = $this->processLogs($data);
-            $this->saveLogs($header, $data);
-        }elseif ($header['packet_type'] == 2)
-        {
-            $data = $this->processSetting($data);
-            $this->saveSetting($header, $data);
+            $_SESSION['header'] = $header;
         }
 
-        return $header;
+        if(!isset($_SESSION['count']) or $_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW full AES")
+        {
+            $_SESSION['count'] = 0;
+            $firmwarePart = substr($contents, $_SESSION['count'], 256);
+            echo $_SESSION['header'] . $firmwarePart;
+            $_SESSION['count'] += 256;
+        }else{
+            if($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page OK")
+            {
+                $firmwarePart = substr($contents, $_SESSION['count'], 256);
+                echo $_SESSION['header'] . $firmwarePart;
+                $_SESSION['count'] += 256;
+
+//                $data = $_SESSION['header'] . $firmwarePart;
+//                $data = unpack("C*", $data);
+//                echo "\n" . "DATA: ";
+//                foreach ($this->addZero($data) as $value) {
+//                    echo $value . " ";
+//                }
+            }
+            if($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page AES") {
+                $_SESSION['count'] = $_SESSION['count'] - 256;
+                If($_SESSION['count'] < 0)
+                {
+                    $_SESSION['count'] = 0;
+                }
+                $firmwarePart = substr($contents, $_SESSION['count'], 256);
+                echo $_SESSION['header'] . $firmwarePart;
+                $_SESSION['count'] += 256;
+            }
+            if($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW full OK")
+            {
+                unset($_SESSION['count']);
+                session_unset();
+                session_destroy();
+            }
+        }
+//        echo "</br>";
+//        echo "COUNT: " . $_SESSION['count'];
+//        echo "</br>";
+//        echo "SESSION: " . $_SESSION{'header'};
+//        echo "</br>";
+    }
+
+    public function processPackage($header, $data)
+    {
+        if(true){
+            $deviceUid = substr($header, 0, 6);
+            $packetType = pack("C*", 4, 0);
+
+            $checksum  = $deviceUid . $packetType;
+            $checksum = Crc32::getCrc32($checksum );
+            $checksum = dechex($checksum);
+            if(strlen($checksum) < 8)
+            {
+                $checksum = "0" . $checksum;
+            }
+            $checksumParts = str_split($checksum, 2);
+
+            for($i=0;$i<count($checksumParts); $i++)
+            {
+                $checksumParts[$i] = pack("C*",hexdec($checksumParts[$i]));
+            }
+            $checksum = strrev(implode("", $checksumParts));
+            $header = $deviceUid . $packetType . $checksum;
+
+            $this->updateFirmware($header);
+        }else{
+
+            $deviceUid = $this->addZero(unpack("C*", substr($header, 0, self::DEVICE_UID)));
+            $packetType = $this->addZero(unpack("C*", strrev(substr($header, self::DEVICE_UID, self::PACKET_TYPE))));
+//        $data_size = array_reverse($this->addZero(unpack("C*", (substr($header, self::DEVICE_UID + self::PACKET_TYPE, self::DATA_SIZE)))));
+
+            $deviceUid = implode("-", $deviceUid);
+            $packetType = dechex(implode("", $packetType));
+//        $data_size = hexdec(implode("", $data_size));
+
+            $header=array(
+                'device_uid' => $deviceUid,
+                'packet_type' => $packetType,
+//            'data_size' => $data_size
+            );
+
+            if($header['packet_type'] == 1)
+            {
+                $data = $this->processLogs($data);
+                $this->saveLogs($header, $data);
+            }elseif ($header['packet_type'] == 2)
+            {
+                $data = $this->processSetting($data);
+                $this->saveSetting($header, $data);
+            }
+
+//            var_dump($header);
+            return $header;
+        }
     }
 
     public function processLogs($data)
@@ -260,7 +330,7 @@ class DispenserProcessor
         {
             if($crcForPacket[$i] == '245a4225') //245a4225 is crc32 for empty packet like ff ff ff
             {
-				header("HTTP/1.1 400 The empty packet");
+//				header("HTTP/1.1 400 The empty packet");
             }elseif(count($logs[$i]) < self::PACKET){
 				//header("HTTP/1.1 400 Wrong size of packet");
         }else {
@@ -284,7 +354,7 @@ class DispenserProcessor
                         'event_uid' => $event_uid,
                     );
                 }else{
-                    header("HTTP/1.1 400 Wrong crc for packet");
+//                    header("HTTP/1.1 400 Wrong crc for packet");
                 }
             }
         }
@@ -358,7 +428,7 @@ class DispenserProcessor
                 $setting['time'],
                 $now)
         );
-        var_dump($result);
+//        var_dump($result);
     }
     //END FOR SAVING DATA
 

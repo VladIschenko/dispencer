@@ -5,14 +5,103 @@
     </div>
     <!-- end  page header -->
 </div>
+
+
 <div class="row">
-    <div class="col-lg-12">
+    <!--Default Pannel, Primary Panel And Success Panel   -->
+    <div class="col-lg-4">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                По типу
+            </div>
+            <div class="panel-body">
+                <form class="form-horizontal" method="POST" enctype="multipart/form-data" action="/control/userlist/type">
+                    <table class="table col-lg-10">
+                        <tbody>
+                        <tr>
+                            <td>
+                                <select name="user-type" size="1" class="form-control">
+                                    <option selected="selected">Все</option>
+                                    <option>god</option>
+                                    <option>superadmin</option>
+                                    <option>admin</option>
+                                    <option>technician</option>
+                                    <option>superuser</option>
+                                    <option>user</option>
+                                </select>
+                            </td>
+
+                            <td>
+                                <button id="singlebutton"  name="send_type" class="btn btn-primary" type="submit">Выбрать</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                По названию организации
+            </div>
+            <div class="panel-body">
+                <form class="form-horizontal" method="POST" enctype="multipart/form-data" action="/control/userlist/organisation">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td>
+                                <input name="organisation" type="text" class="form-control" />
+                            </td>
+
+                            <td>
+                                <button id="singlebutton"  name="send_organisation" class="btn btn-primary" type="submit">Выбрать</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Поиск по базе
+            </div>
+            <div class="panel-body">
+                <form class="form-horizontal" method="POST" enctype="multipart/form-data" action="/control/userlist/search">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td>
+                                <input name="search" type="text" class="form-control" />
+                            </td>
+                            <td>
+                                <button id="singlebutton"  name="send_search" class="btn btn-primary" type="submit">Выбрать</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--End Default Pannel, Primary Panel And Success Panel   -->
+</div>
+
+
+<div class="row">
         <!-- Advanced Tables -->
-        <div class="panel panel-default">
+        <div class="panel panel-default  zero-padding col-lg-12">
             <div class="panel-heading">
                 Пользователи
             </div>
             <div class="panel-body">
+
                 <div class="table-responsive">
                     <table class="table table-striped table-bordered table-hover" id="dataTables-example">
                                 <thead>
@@ -21,7 +110,9 @@
                                     <th>ID</th>
                                     <th>Логин</th>
                                     <th>Имя и фамилия</th>
+                                    <th>Статус</th>
                                     <th>Примечания</th>
+                                    <th>Организация</th>
                                     <th>Телефонный номер</th>
                                     <th>Ед.измерения</th>
                                     <th>Язык</th>
@@ -50,7 +141,9 @@
                                         <td class="id"><?php echo $user['id']; ?></td>
                                         <td><?php echo $user['login']; ?></td>
                                         <td><?php echo $user['first_name'] . " " . $user['last_name']; ?></td>
+                                        <td><?php echo $user['group_name'] ?></td>
                                         <td><?php echo $user['description']; ?></td>
+                                        <td><?php echo $user['organisation']; ?></td>
                                         <td><?php echo $user['phone']; ?></td>
                                         <td><?php echo $user['measurement']; ?></td>
                                         <td><?php echo $user['lang']; ?></td>
@@ -62,7 +155,6 @@
 
             </div>
         </div>
-        <!--End Advanced Tables -->
-    </div>
 </div>
+        <!--End Advanced Tables -->
 

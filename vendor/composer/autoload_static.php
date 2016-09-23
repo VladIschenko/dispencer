@@ -49,29 +49,11 @@ class ComposerStaticInitb562ca924a573b49995abaae357404c6
         ),
     );
 
-    public static $classMap = array (
-        'Controllers\\DeviceController' => __DIR__ . '/../..' . '/controllers/DeviceController.php',
-        'Controllers\\MainController' => __DIR__ . '/../..' . '/controllers/MainController.php',
-        'Controllers\\UserController' => __DIR__ . '/../..' . '/controllers/UserController.php',
-        'Core\\Db' => __DIR__ . '/../..' . '/core/Db.php',
-        'Core\\Router' => __DIR__ . '/../..' . '/core/Router.php',
-        'Core\\View' => __DIR__ . '/../..' . '/core/View.php',
-        'Handler\\Crc32' => __DIR__ . '/../..' . '/requestHandler/Crc32.php',
-        'Handler\\Dispenser' => __DIR__ . '/../..' . '/requestHandler/Dispenser.php',
-        'Handler\\DispenserFobCycle' => __DIR__ . '/../..' . '/requestHandler/DispenserFobCycle.php',
-        'Handler\\DispenserPart' => __DIR__ . '/../..' . '/requestHandler/DispenserPart.php',
-        'Handler\\DispenserProcessor' => __DIR__ . '/../..' . '/requestHandler/DispenserProcessor.php',
-        'Handler\\Handler' => __DIR__ . '/../..' . '/requestHandler/Handler.php',
-        'Models\\DeviceModel' => __DIR__ . '/../..' . '/models/DeviceModel.php',
-        'Models\\UserModel' => __DIR__ . '/../..' . '/models/UserModel.php',
-    );
-
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInitb562ca924a573b49995abaae357404c6::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInitb562ca924a573b49995abaae357404c6::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitb562ca924a573b49995abaae357404c6::$classMap;
 
         }, null, ClassLoader::class);
     }

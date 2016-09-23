@@ -5,6 +5,9 @@ error_reporting(E_ALL);
 
 define("IN_PARSER_MODE", "true");
 
+session_start();
+
+
 require 'requestHandler/DispenserProcessor.php';
 require 'requestHandler/Crc32.php';
 require 'core/Db.php';

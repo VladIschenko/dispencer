@@ -23,9 +23,11 @@ class UserModel {
     private $firstName;
     private $lastname;
     private $description;
+    private $organisation;
     private $phone;
     private $measurement;
     private $language;
+    private $groupName;
 
 
     public function __construct() {
@@ -94,6 +96,16 @@ class UserModel {
         $this->description = $description;
     }
 
+    public function getOrganisation()
+    {
+        return $this->organisation;
+    }
+
+    public function setOrganisation($organisation)
+    {
+        $this->organisation = $organisation;
+    }
+
     public function getPhone()
     {
         return $this->phone;
@@ -124,8 +136,15 @@ class UserModel {
         $this->language = $language;
     }
 
+    public function getGroupName()
+    {
+        return $this->groupName;
+    }
 
-
+    public function setGroupName($groupName)
+    {
+        $this->groupName = $groupName;
+    }
 
 
     //Find functions
@@ -144,12 +163,45 @@ class UserModel {
         return $user;
     }
 
+    public function findByType($type)
+    {
+        if($type == '%')
+        {
+            $stmt = $this->db->query("SELECT * FROM users WHERE group_name LIKE '$type' ORDER BY created_at DESC");
+            $stmt->execute();
+            $userList = $stmt->fetchAll();
+        }else {
+            $stmt = $this->db->query("SELECT * FROM users WHERE group_name = '$type' ORDER BY created_at DESC");
+            $stmt->execute();
+            $userList = $stmt->fetchAll();
+        }
+        return $userList;
+    }
+
+    public function findByOrganisation($organisation)
+    {
+        $stmt = $this->db->query("SELECT * FROM users WHERE organisation = '$organisation' ORDER BY created_at DESC");
+        $stmt->execute();
+        $userList = $stmt->fetchAll();
+        return $userList;
+    }
+
+
+    public function findBySearchPhrase($search)
+    {
+        $stmt = $this->db->query("SELECT * FROM users WHERE concat(login,email,first_name,last_name,description,organisation, phone) LIKE '%$search%'");
+        $stmt->execute();
+        $userList = $stmt->fetchAll();
+        return $userList;
+    }
+
+
 
     //For CRUD functions
 
     public function checkUserType($id)
     {
-        $stmt = $this->db->prepare("SELECT role FROM users WHERE id = $id;");
+        $stmt = $this->db->prepare("SELECT group_name FROM users WHERE id = $id;");
         $stmt->execute();
         $status = $stmt->fetchColumn();
         return $status;
@@ -164,15 +216,15 @@ class UserModel {
         return $id;
     }
 
-    public function save($role)
+    public function save()
     {
         $now = date("Y-m-d H:i:s");
         $stmt = $this->db->prepare("INSERT INTO users(login, password,
- email, first_name, last_name, description, phone, measurement, lang, role, created_at) 
- values (?,?,?,?,?,?,?,?,?,?,?)");
+ email, first_name, last_name, description, organisation, phone, measurement, lang, group_name, created_at) 
+ values (?,?,?,?,?,?,?,?,?,?,?,?)");
         $result = $stmt->execute(array($this->getUsername(), $this->getPass(), $this->getEmail(), $this->getFirstName(),
-            $this->getLastname(), $this->getDescription(), $this->getPhone(), $this->getMeasurement(),
-            $this->getLanguage(), $role, $now));
+            $this->getLastname(), $this->getDescription(), $this->getOrganisation(), $this->getPhone(), $this->getMeasurement(),
+            $this->getLanguage(), $this->getGroupName(), $now));
         echo $result;
         return $this->db->lastInsertId();
     }
@@ -227,8 +279,28 @@ class UserModel {
         return false;
     }
 
+    public function checkPermission($id, $action)
+    {
+        $view = new View();
+        $stmt = $this->db->prepare("SELECT permissions.id FROM permissions, actions WHERE group_id =
+(SELECT id FROM groups WHERE name = (SELECT group_name FROM users WHERE id = :user_id))
+AND action = :action;");
+        $stmt->bindParam(':user_id', $id);
+        $stmt->bindParam(':action', $action);
+        $stmt->execute();
+////        var_dump($stmt->fetchColumn());
+        if ($stmt->fetchColumn() > 0) {
+            $permission = true;
+        }else{
+            $permission = false;
+        }
+        return $permission;
+    }
 
-    //Session functions
+
+
+
+        //Session functions
 
     public static function sessionStart()
     {
@@ -247,4 +319,5 @@ class UserModel {
         }
         return false;
     }
+
 }

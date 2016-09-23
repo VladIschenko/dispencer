@@ -6,7 +6,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bootsrtap Free Admin Template - SIMINTA | Admin Dashboad Template</title>
+    <title>Beerbook</title>
+
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
 
     <script src="../../public/js/jquery-3.1.0.js"></script>
     <link href="../../public/css/datepicker.min.css" rel="stylesheet" type="text/css">
@@ -240,22 +245,6 @@
                 <!-- end dropdown-alerts -->
             </li>
 
-            <li class="dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                    <i class="fa fa-user fa-3x"></i>
-                </a>
-                <!-- dropdown user-->
-                <ul class="dropdown-menu dropdown-user">
-                    <li><a href="#"><i class="fa fa-user fa-fw"></i>User Profile</a>
-                    </li>
-                    <li><a href="#"><i class="fa fa-gear fa-fw"></i>Settings</a>
-                    </li>
-                    <li class="divider"></li>
-                    <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i>Logout</a>
-                    </li>
-                </ul>
-                <!-- end dropdown-user -->
-            </li>
             <!-- end main dropdown -->
         </ul>
         <!-- end navbar-top-links -->
@@ -299,11 +288,12 @@
                 <li class="">
                     <a href="/user/<?php echo $_SESSION['id'] ?>"><i class="fa fa-dashboard fa-fw"></i>Мой профиль</a>
                 </li>
+                <?php if(isset($_SESSION['type']) and $_SESSION['type'] == 'god') {?>
                 <li>
                     <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i>Статистика<span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
                         <li>
-                            <a href="/">Общая</a>
+                            <a href="/stats">Общая</a>
                         </li>
                         <li>
                             <a href="flot.html">По сортам</a>
@@ -315,11 +305,21 @@
                     <!-- second-level-items -->
                 </li>
                 <li>
-                    <a href="/userlist"><i class="fa fa-table fa-fw"></i>Список пользователей</a>
+                    <a href="/control/userlist"><i class="fa fa-table fa-fw"></i>Управление пользователями</a>
                 </li>
+                    <li>
+                        <a href="/control/devices"><i class="fa fa-table fa-fw"></i>Управление устройствами</a>
+                    </li>
+                    <li>
+                        <a href="/control/logs"><i class="fa fa-table fa-fw"></i>Управление логами</a>
+                    </li>
+                    <li>
+                        <a href="/control/options"><i class="fa fa-table fa-fw"></i>Управление настройками</a>
+                    </li>
                 <li>
                     <a href="/add-user"><i class="fa fa-plus" aria-hidden="true"></i>Добавить пользователя</a>
                 </li>
+                <?php } ?>
                 <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i>Выйти</a></li>
             </ul>
             <!-- end side-menu -->

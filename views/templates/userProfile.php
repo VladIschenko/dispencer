@@ -24,10 +24,6 @@
                             <td><?php echo $data['login']; ?></td>
                         </tr>
                         <tr>
-                            <td>Статус</td>
-                            <td><?php echo $data['role']; ?></td>
-                        </tr>
-                        <tr>
                             <td>Дата регистрации</td>
                             <td><?php echo $data['created_at']; ?></td>
                         </tr>
@@ -58,7 +54,7 @@
                         </tbody>
                     </table>
                     <a href="/edit/<?php echo $data['id']; ?>" class="btn btn-primary margin-left"><span class="glyphicon glyphicon-edit"></span>Редактировать</a>
-                    <a href="user/<?php echo $user['id']; ?>" class="btn btn-danger margin-left"><span class="glyphicon glyphicon-remove"></span>Удалить</a>
+                    <a href="user/<?php echo $data['id']; ?>" class="btn btn-danger margin-left"><span class="glyphicon glyphicon-remove"></span>Удалить</a>
                 </div>
 
             </div>

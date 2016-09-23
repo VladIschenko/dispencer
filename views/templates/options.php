@@ -1,43 +1,3 @@
-<!---->
-<!--<form class="form-horizontal" method="POST" enctype="multipart/form-data" action="/viewStats">-->
-<!--    <fieldset>-->
-<!---->
-<!--        <legend>Выберите дату и id устройства</legend>-->
-<!---->
-<!--        <div class="form-group">-->
-<!--            <label class="col-md-4 control-label" for="textinput">Период</label>-->
-<!--            <div class="col-md-4">-->
-<!--                <input id="textinput" name="start_date" type="text" placeholder="Дата начала" class="form-control input-md datepicker-here" required="">-->
-<!--        </div>-->
-<!--            </div>-->
-<!--        <div class="form-group">-->
-<!--            <label class="col-md-4 control-label" for="textinput"></label>-->
-<!--            <div class="col-md-4">-->
-<!--                <input id="textinput" name="end_date" type="text" placeholder="Дата конца" class="form-control input-md datepicker-here" required="">-->
-<!--            </div>-->
-<!--        </div>-->
-<!---->
-<!--        <div class="form-group">-->
-<!--            <label class="col-md-4 control-label" for="selectbasic">ID устройства</label>-->
-<!--            <div class="col-md-4">-->
-<!--                <select id="selectbasic" name="device_id" class="form-control">-->
-<!--                    <option value="1">1</option>-->
-<!--                    <option value="2">2</option>-->
-<!--                    <option value="3">3</option>-->
-<!--                </select>-->
-<!--            </div>-->
-<!--        </div>-->
-<!---->
-<!--        <div class="form-group">-->
-<!--            <label class="col-md-4 control-label" for="singlebutton"></label>-->
-<!--            <div class="col-md-4">-->
-<!--                <button id="singlebutton"  name="send_options" class="btn btn-primary">Отправить</button>-->
-<!--            </div>-->
-<!--        </div>-->
-<!---->
-<!--    </fieldset>-->
-<!--</form>-->
-
 <div class="row">
     <!--  page header -->
     <div class="col-lg-12">
@@ -55,7 +15,7 @@
             <div class="panel-body ">
 
                 <div class="table-responsive">
-                    <form class="form-horizontal" method="POST" enctype="multipart/form-data" action="/viewStats">
+                    <form class="form-horizontal" method="POST" enctype="multipart/form-data" action="/processStats">
                     <table class="table">
                         <thead>
                         <tr>
@@ -69,20 +29,14 @@
                         <tr>
                             <td><input id="textinput" name="start_date" type="text" placeholder="Дата начала" class="form-control input-md datepicker-here" required=""></td>
                             <td><input id="textinput" name="end_date" type="text" placeholder="Дата конца" class="form-control input-md datepicker-here" required=""></td>
-                            <td>
-                                <select id="selectbasic" name="device_id" class="form-control">
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                </select>
-                            </td>
+                            <td><input id="textinput" name="device_id" type="text" placeholder="ID" class="form-control input-md" value="00-04-a3-69-a9-0b" required=""></td>
                             <td>
                                 <button id="singlebutton"  name="send_options" class="btn btn-primary" type="submit">Отправить</button>
                             </td>
                         </tr>
                         </tbody>
                     </table>
-                        </
+                        </form>
                 </div>
 
             </div>
@@ -90,3 +44,4 @@
         <!--End Advanced Tables -->
     </div>
 </div>
+

@@ -25,7 +25,7 @@ class View
     {
         ob_start();
         extract($data);
-        require_once('views/templates/' . $file . '.php');
+        require_once('views/' . $file . '.php');
         $renderView = ob_get_clean();
         return $renderView;
     }

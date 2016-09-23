@@ -27,14 +27,15 @@ class MainController
     {
         if(isset($_SESSION['login']))
         {
-            DeviceController::stats();
+            self::mapView();
         } else {
             UserController::loginFormView();
         }
     }
 
-    public static function test()
+    public static function mapView()
     {
-
+        $view = new View();
+        echo $view->render('main');
     }
 }
