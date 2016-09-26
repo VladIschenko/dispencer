@@ -10,6 +10,7 @@ namespace Controllers;
 
 use Core\View;
 use Models\DeviceModel;
+use Models\MainModel;
 
 class DeviceController
 {
@@ -68,24 +69,27 @@ class DeviceController
     public static  function showFullDevicelist()
     {
         $device = new DeviceModel();
+        $helper = new MainModel();
 
-        $freeDevices = $device->findFreeDevices();
-        $soldDevices = $device->findSoldDevices();
-        $installedDevices = $device->findInstalledDevices();
+        $organisationsList = $helper->findAllOrganisations();
         echo View::insert('layouts/header');
-        echo View::insert('templates/devicePanel');
+        echo View::insert('templates/devicePanel', $organisationsList);
         if (isset($_POST['device-organisation'])){
             $organisation = $_POST['device-organisation'];
             $devices = $device->findDevicesByOrganisation($organisation);
             echo View::insert('templates/devicePanel/soldDevices', $devices);
         }
         if(!isset($_POST['device-type']) and !isset($_POST['device-organisation'])){
+            $installedDevices = $device->findInstalledDevices();
             echo View::insert('templates/devicePanel/installedDevices', $installedDevices);
         }elseif(isset($_POST['device-type']) and $_POST['device-type'] == 'Свободные'){
+            $freeDevices = $device->findFreeDevices();
             echo View::insert('templates/devicePanel/freeDevices', $freeDevices);
         }elseif(isset($_POST['device-type']) and $_POST['device-type'] == 'Проданные'){
+            $soldDevices = $device->findSoldDevices();
             echo View::insert('templates/devicePanel/soldDevices', $soldDevices);
         }elseif(isset($_POST['device-type']) and $_POST['device-type'] == 'Установленные'){
+            $installedDevices = $device->findInstalledDevices();
             echo View::insert('templates/devicePanel/installedDevices', $installedDevices);
         }
         echo View::insert('layouts/footer');
@@ -124,6 +128,80 @@ class DeviceController
             echo View::render('deviceProfile', $user);
         }
     }
+
+    public static function updateFirmware($id)
+    {
+        $device = new DeviceModel();
+        $device->changeFirmwareStatusToStanby($id);
+    }
+
+    public static function addDevice()
+    {
+        $view = new View();
+        if(!isset($_SESSION['login'])){
+            echo $view->render('errors/unauthorized');
+        }else{
+            echo $view->render('addDevice');
+        }
+    }
+
+    public static function saveDevice()
+    {
+        $device = new DeviceModel();
+        if ($device->deviceExists($_POST['device_id'])) {
+            echo "user exist";
+        }else{
+                $device->setDeviceId($_POST['device_id']);
+            if(empty($_POST['organisation'])){
+                $device->setOrganisation(NULL);
+            }else{
+                $device->setOrganisation($_POST['organisation']);
+            }
+            if(empty($_POST['organisation'])){
+                $device->setOrganisation(NULL);
+            }else{
+                $device->setInstallationDate($_POST['installation_date']);
+            }
+            if(empty($_POST['organisation'])){
+                $device->setOrganisation(NULL);
+            }else{
+                $device->setInstallationAddres($_POST['installation_address']);
+            }
+            if(empty($_POST['organisation'])){
+                $device->setOrganisation(NULL);
+            }else{
+                $device->setGps($_POST['gps']);
+            }
+            if(empty($_POST['organisation'])){
+                $device->setOrganisation(NULL);
+            }else{
+                $device->setInventoryNumber($_POST['inventory_number']);
+            }
+            if(empty($_POST['organisation'])){
+                $device->setOrganisation(NULL);
+            }else{
+                $device->setInstallerName($_POST['installer_name']);
+            }
+                $device->save();
+        }
+//        header('Location: /control/devices');
+    }
+
+//    public static function updateProfile($id)
+//    {
+//        $user = new UserModel();
+//        $user->setUsername($_POST['login']);
+//        $user->setEmail($_POST['email']);
+//        $user->setFirstName($_POST['firstname']);
+//        $user->setLastname($_POST['lastname']);
+//        $user->setDescription($_POST['description']);
+//        $user->setPhone($_POST['phone']);
+//        $user->setMeasurement($_POST['measurement']);
+//        $user->setLanguage($_POST['lang']);
+////      $user->checkIsValidForRegister();
+//        $user->update($id);
+//        header('Location: /userlist');
+//    }
 
 
 

@@ -49,9 +49,9 @@
                         <tr>
                             <td>
                                 <select name="device-organisation" size="1" class="form-control">
-                                    <option>Altbier</option>
-                                    <option>Pivobank</option>
-                                    <option>Karat</option>
+                                    <?php foreach ($data as $organisation) { ?>
+                                    <option value="<?php echo $organisation['organisation'] ?>"><?php echo $organisation['organisation'] ?></option>
+                                    <?php } ?>
                                 </select>
                             </td>
 

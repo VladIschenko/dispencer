@@ -15,5 +15,7 @@ $count = $_SESSION['counter'];
 echo $count;
 $_SESSION['counter'] += 1;
 
+//session_destroy();
+
 
 //session_destroy();

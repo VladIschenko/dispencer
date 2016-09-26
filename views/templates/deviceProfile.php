@@ -55,7 +55,7 @@
                     </table>
                     <a href="/edit/<?php echo $data['id']; ?>" class="btn btn-primary margin-left"><span class="glyphicon glyphicon-edit"></span>Редактировать</a>
                     <a href="user/<?php echo $data['id']; ?>" class="btn btn-danger margin-left"><span class="glyphicon glyphicon-remove"></span>Удалить</a>
-                    <a href="user/<?php echo $data['id']; ?>" class="btn btn-success margin-left"><span class="glyphicon glyphicon-remove"></span>Обновить прошивку</a>
+                    <a href="/control/devices/firmware/<?php echo $data['device_id']; ?>" class="btn btn-success margin-left"><span class="glyphicon glyphicon-remove"></span>Обновить прошивку</a>
                 </div>
 
             </div>

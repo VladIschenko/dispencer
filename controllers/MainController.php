@@ -12,11 +12,6 @@ use Core\View;
 
 class MainController
 {
-    public function __construct()
-    {
-        echo "We are in main __construct";
-    }
-
     public static function notFound()
     {
         $view = new View();

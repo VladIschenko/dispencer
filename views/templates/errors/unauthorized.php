@@ -1,3 +1,11 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beerbook</title>
+    <link href="../../public/css/bootstrap.min.css" rel="stylesheet" />
+</head>
 <div class="row">
     <!--  page header -->
     <div class="col-lg-12">
@@ -22,5 +30,6 @@
         <!--End Advanced Tables -->
     </div>
 </div>
+</html>
 
 <?php header("HTTP/1.0 401 Unauthorized"); ?>

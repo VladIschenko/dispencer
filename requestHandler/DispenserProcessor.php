@@ -203,7 +203,7 @@ class DispenserProcessor
         header("Expires:");
         header("Cache-Control:");
 
-        $filename = "firmware.bin";
+        $filename = "firmware3.bin";
         $handle = fopen($filename, "rb");
         $contents = fread($handle, filesize($filename));
         fclose($handle);
@@ -219,9 +219,7 @@ class DispenserProcessor
             $firmwarePart = substr($contents, $_SESSION['count'], 256);
             echo $_SESSION['header'] . $firmwarePart;
             $_SESSION['count'] += 256;
-        }else{
-            if($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page OK")
-            {
+        }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page OK"){
                 $firmwarePart = substr($contents, $_SESSION['count'], 256);
                 echo $_SESSION['header'] . $firmwarePart;
                 $_SESSION['count'] += 256;
@@ -232,8 +230,7 @@ class DispenserProcessor
 //                foreach ($this->addZero($data) as $value) {
 //                    echo $value . " ";
 //                }
-            }
-            if($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page AES") {
+            }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page AES") {
                 $_SESSION['count'] = $_SESSION['count'] - 256;
                 If($_SESSION['count'] < 0)
                 {
@@ -242,13 +239,17 @@ class DispenserProcessor
                 $firmwarePart = substr($contents, $_SESSION['count'], 256);
                 echo $_SESSION['header'] . $firmwarePart;
                 $_SESSION['count'] += 256;
-            }
-            if($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW full OK")
+            }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW full OK")
             {
                 unset($_SESSION['count']);
+                unset($_SESSION['header']);
                 session_unset();
                 session_destroy();
-            }
+            }else{
+            unset($_SESSION['count']);
+            unset($_SESSION['header']);
+            session_unset();
+            session_destroy();
         }
 //        echo "</br>";
 //        echo "COUNT: " . $_SESSION['count'];

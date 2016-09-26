@@ -25,6 +25,7 @@ class DeviceModel {
     private $gps;
     private $inventoryNumber;
     private $installerName;
+    private $firmwareStatus;
 
 
     public function getDeviceId()
@@ -107,6 +108,16 @@ class DeviceModel {
         $this->installerName = $installerName;
     }
 
+    public function getFirmwareStatus()
+    {
+        return $this->firmwareStatus;
+    }
+
+    public function setFirmwareStatus($firmwareStatus)
+    {
+        $this->firmwareStatus = $firmwareStatus;
+    }
+
     public function __construct() {
         $this->db = Db::connect();
     }
@@ -177,6 +188,15 @@ class DeviceModel {
         return $installedDevices;
     }
 
+    public function findBySearchPhrase($search)
+    {
+        $stmt = $this->db->query("SELECT * FROM devices WHERE concat(device_id,customer_id,organisation,installation_date,
+installation_address, gps, inventory number, installer_name) LIKE '%$search%'");
+        $stmt->execute();
+        $userList = $stmt->fetchAll();
+        return $userList;
+    }
+
     public function findDevicesByOrganisation($organisation)
     {
         $stmt= $this->db->query("SELECT * FROM devices WHERE organisation = '$organisation'");
@@ -191,8 +211,77 @@ class DeviceModel {
     public function findDeviceById($id)
     {
         $stmt = $this->db->query("SELECT * FROM devices WHERE id = $id;");
-        $user = $stmt->fetch();
-        return $user;
+        $device = $stmt->fetch();
+        return $device;
+    }
+
+    public function checkFirmwareStatus($id)
+    {
+        $stmt = $this->db->prepare("SELECT firmware_status FROM devices WHERE device_id = :id;");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $status = $stmt->fetchColumn();
+        return $status;
+    }
+
+    public function changeFirmwareStatusToStanby($id)
+    {
+        $stmt = $this->db->prepare("UPDATE devices SET firmware_status = '1' WHERE device_id = :id;");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+    }
+
+    public function changeFirmwareStatusToNotRequired($id)
+    {
+        $stmt = $this->db->query("SET SQL_SAFE_UPDATES = 0;");
+        $stmt = $this->db->prepare("UPDATE devices SET firmware_status = '0' WHERE device_id = :id;");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+    }
+
+    public function delete($id)
+    {
+        $stmt = $this->db->prepare('DELETE FROM devices WHERE id = :id');
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        return $this->db->lastInsertId();
+    }
+
+    public function save()
+    {
+        $now = date("Y-m-d H:i:s");
+        $stmt = $this->db->prepare("INSERT INTO devices(device_id,
+ organisation, installation_date, installation_address, gps, inventory_number, 
+ installer_name, firmware_status, created_at) 
+ values (?,?,?,?,?,?,?,?,?)");
+        var_dump($stmt);
+        $result = $stmt->execute(array($this->getDeviceId(), $this->getOrganisation(), $this->getInstallationDate(),
+            $this->getInstallationAddres(), $this->getGps(), $this->getInventoryNumber(), $this->getInstallerName(), '0', $now));
+        echo $this->getDeviceId();
+        var_dump($result);
+        return $this->db->lastInsertId();
+    }
+
+    public function update($id)
+    {
+        $stmt = $this->db->prepare('UPDATE devices SET device_id = ?, customer_id = ?, organisation = ?,
+  installation_date = ?, installation_address = ?, gps = ?, inventory_number = ?, installer_name = ?,
+  firmware_status = ?
+  WHERE id = ?');
+        $stmt->execute(array($this->getDeviceId(),$this->getCustomerId(),$this->getOrganisation(),
+            $this->getInstallationDate(),$this->getInstallationAddres(),$this->getGps(),
+            $this->getInventoryNumber(),$this->getInstallerName(),$this->getFirmwareStatus(),));
+//        var_dump($stmt);
+        return $this->db->lastInsertId();
+    }
+
+    public function deviceExists($deviceId) {
+        $stmt = $this->db->prepare("SELECT count(device_id) FROM users where device_id=?");
+        $stmt->execute(array($deviceId));
+        if ($stmt->fetchColumn() > 0) {
+            return true;
+        }
+        return false;
     }
 
 }

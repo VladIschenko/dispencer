@@ -138,11 +138,10 @@ class UserController
 
     public static function addUser()
     {
+        $view = new View();
         if(!isset($_SESSION['login'])){
-            $view = new View();
             echo $view->render('errors/unauthorized');
         }else{
-            $view = new View();
             echo $view->render('addUser');
         }
     }

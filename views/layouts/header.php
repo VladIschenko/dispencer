@@ -304,21 +304,31 @@
                     </ul>
                     <!-- second-level-items -->
                 </li>
-                <li>
-                    <a href="/control/userlist"><i class="fa fa-table fa-fw"></i>Управление пользователями</a>
-                </li>
                     <li>
-                        <a href="/control/devices"><i class="fa fa-table fa-fw"></i>Управление устройствами</a>
-                    </li>
-                    <li>
-                        <a href="/control/logs"><i class="fa fa-table fa-fw"></i>Управление логами</a>
-                    </li>
-                    <li>
-                        <a href="/control/options"><i class="fa fa-table fa-fw"></i>Управление настройками</a>
+                        <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i>Панели управления<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="/control/userlist">Пользователями</a>
+                            </li>
+                            <li>
+                                <a href="/control/devices">Устройствами</a>
+                            </li>
+                            <li>
+                                <a href="/control/options">Настройками</a>
+                            </li>
+                            <li>
+                                <a href="/control/logs">Логами</a>
+                            </li>
+                        </ul>
+                        <!-- second-level-items -->
                     </li>
                 <li>
                     <a href="/add-user"><i class="fa fa-plus" aria-hidden="true"></i>Добавить пользователя</a>
                 </li>
+                    <li>
+                        <a href="/control/devices/add"><i class="fa fa-plus" aria-hidden="true"></i>Добавить устройство</a>
+                    </li>
+
                 <?php } ?>
                 <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i>Выйти</a></li>
             </ul>

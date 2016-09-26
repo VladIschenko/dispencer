@@ -33,16 +33,21 @@ return $routes = array(
     '/control/userlist/organisation' => 'GodController/ViewUserlistByOrganisation',
     '/control/userlist/search' => 'GodController/ViewUserlistBySearchPhrase',
 
+    //Routes for Devices
     '/control/devices' => 'DeviceController/showFullDevicelist',
     '/control/devices/:num' => 'DeviceController/deviceProfileView/$1',
-    '/control/devices/free' => 'DeviceController/showFreeDevicelist',
-    '/control/devices/sold' => 'DeviceController/showSoldDevicelist',
-    '/control/devices/insatlled' => 'DeviceController/showInsatlledDevicelist',
+    '/control/devices/firmware/:any'  => 'DeviceController/updateFirmware/$1',
+    '/control/devices/add'  => 'DeviceController/addDevice',
+    '/control/devices/save'  => 'DeviceController/saveDevice',
+    '/control/devices/edit/:num'  => 'DeviceController/editDevice',
 
+    //Routes for Logs
     '/control/logs' => 'LogsController/ViewFullLogslist',
 
+    //Routes for Options
     '/control/options' => 'OptionsController/ViewFullOptionslist',
 
+    //Routes for Stats
     '/control/stats' => 'GodController/ViewStatsForGod',
 
 );
