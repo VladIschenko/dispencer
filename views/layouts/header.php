@@ -8,10 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beerbook</title>
 
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+<!--    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">-->
+<!--    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>-->
+<!--    <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>-->
+<!--    <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>-->
 
     <script src="../../public/js/jquery-3.1.0.js"></script>
     <link href="../../public/css/datepicker.min.css" rel="stylesheet" type="text/css">
@@ -319,6 +319,9 @@
                             <li>
                                 <a href="/control/logs">Логами</a>
                             </li>
+                            <li>
+                                <a href="/beerlist">Сортами пива</a>
+                            </li>
                         </ul>
                         <!-- second-level-items -->
                     </li>
@@ -328,9 +331,40 @@
                     <li>
                         <a href="/control/devices/add"><i class="fa fa-plus" aria-hidden="true"></i>Добавить устройство</a>
                     </li>
+                    <li>
+                        <a href="/beer/add"><i class="fa fa-plus" aria-hidden="true"></i>Добавить новый сорт пива</a>
+                    </li>
 
-                <?php } ?>
+                <?php }else{ ?>
+
+                <li>
+                    <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i>Панели управления<span class="fa arrow"></span></a>
+                    <ul class="nav nav-second-level">
+                        <li>
+                            <a href="/control/userlist">Пользователями</a>
+                        </li>
+                        <li>
+                            <a href="/control/devices">Устройствами</a>
+                        </li>
+                        <li>
+                            <a href="/beerlist">Сортами пива</a>
+                        </li>
+                    </ul>
+                    <!-- second-level-items -->
+                </li>
+                <li>
+                    <a href="/add-user"><i class="fa fa-plus" aria-hidden="true"></i>Добавить пользователя</a>
+                </li>
+                <li>
+                    <a href="/control/devices/add"><i class="fa fa-plus" aria-hidden="true"></i>Добавить устройство</a>
+                </li>
+                <li>
+                    <a href="/beer/add"><i class="fa fa-plus" aria-hidden="true"></i>Добавить новый сорт пива</a>
+                </li>
+
                 <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i>Выйти</a></li>
+                <?php } ?>
+
             </ul>
             <!-- end side-menu -->
         </div>

@@ -18,17 +18,32 @@ class LogsController
 
     public static  function ViewFullLogslist()
     {
-        $user = new UserModel();
-        $id = $user->getIdByLogin($_SESSION['login']);
-        $action = 'ViewFullUserlist';
+        if (!isset($_SESSION['login'])) {
+            echo View::render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $id = $user->getIdByLogin($_SESSION['login']);
+            $action = 'ViewFullUserlist';
+            if (!isset($_SESSION['login'])) {
+                echo View::render('errors/unauthorized');
+            } elseif (!$user->checkPermission($id, $action)) {
+                echo View::render('errors/forbidden');
+            } else {
+                $logs = new LogsModel();
+                $logslist = $logs->findAll();
+                echo View::render('logsList', $logslist);
+            }
+        }
+    }
+
+    public static  function ViewLogsById($id)
+    {
         if(!isset($_SESSION['login']))
         {
             echo View::render('errors/unauthorized');
-        } elseif (!$user->checkPermission($id, $action)){
-            echo View::render('errors/forbidden');
-        } else {
+        }else {
             $logs = new LogsModel();
-            $logslist = $logs->findAll();
+            $logslist = $logs->findById($id);
             echo View::render('logsList', $logslist);
         }
     }

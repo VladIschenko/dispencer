@@ -6,6 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Notifications\\' => array($baseDir . '/smsGateway'),
     'Models\\' => array($baseDir . '/models'),
     'Handler\\' => array($baseDir . '/requestHandler'),
     'Graph\\' => array($baseDir . '/views/templates'),

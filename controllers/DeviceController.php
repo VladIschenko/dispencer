@@ -9,6 +9,7 @@
 namespace Controllers;
 
 use Core\View;
+use Models\BeerModel;
 use Models\DeviceModel;
 use Models\MainModel;
 
@@ -110,9 +111,9 @@ class DeviceController
             $view = new View();
             echo $view->render('errors/unauthorized');
         } else {
-            $user = new DeviceModel();
-            $user = $user->findDeviceById($id);
-            echo View::render('editDevice', $user);
+            $device = new DeviceModel();
+            $device = $device->findDeviceById($id);
+            echo View::render('editDevice', $device);
         }
     }
 
@@ -123,9 +124,16 @@ class DeviceController
             $view = new View();
             echo $view->render('errors/unauthorized');
         } else {
-            $user = new DeviceModel();
-            $user = $user->findDeviceById($id);
-            echo View::render('deviceProfile', $user);
+            $beers = new BeerModel();
+            $beerList = $beers->findAllSorts();
+            $sorts = $beers->findSortsOnDeviceChannels($id);
+            $device = new DeviceModel();
+            $status = $device->checkSmsNotifications($id);
+            $device = $device->findDeviceById($id);
+            $data = array_merge($beerList, $device);
+            $data = array_merge($data, $sorts);
+            $device['sms_status'] = $status;
+            echo View::render('deviceProfile', $data);
         }
     }
 
@@ -133,6 +141,23 @@ class DeviceController
     {
         $device = new DeviceModel();
         $device->changeFirmwareStatusToStanby($id);
+        header('Location: /control/devices');
+
+    }
+
+    public static function changeSmsNotification($id)
+    {
+        $device = new DeviceModel();
+        $status = $device->checkSmsNotifications($id);
+        if($status == 1)
+        {
+            $device->changeSmsNotificationsToNotNeeded($id);
+            header("Location: /control/devices/$id");
+        }elseif($status == 0){
+            $device->changeSmsNotificationsToNeeded($id);
+            header("Location: /control/devices/$id");
+
+        }
     }
 
     public static function addDevice()
@@ -149,7 +174,7 @@ class DeviceController
     {
         $device = new DeviceModel();
         if ($device->deviceExists($_POST['device_id'])) {
-            echo "user exist";
+            echo "device exist";
         }else{
                 $device->setDeviceId($_POST['device_id']);
             if(empty($_POST['organisation'])){
@@ -157,27 +182,22 @@ class DeviceController
             }else{
                 $device->setOrganisation($_POST['organisation']);
             }
-            if(empty($_POST['organisation'])){
+            if(empty($_POST['installation_date'])){
                 $device->setOrganisation(NULL);
             }else{
                 $device->setInstallationDate($_POST['installation_date']);
             }
-            if(empty($_POST['organisation'])){
+            if(empty($_POST['installation_address'])){
                 $device->setOrganisation(NULL);
             }else{
                 $device->setInstallationAddres($_POST['installation_address']);
             }
-            if(empty($_POST['organisation'])){
-                $device->setOrganisation(NULL);
-            }else{
-                $device->setGps($_POST['gps']);
-            }
-            if(empty($_POST['organisation'])){
+            if(empty($_POST['inventory_number'])){
                 $device->setOrganisation(NULL);
             }else{
                 $device->setInventoryNumber($_POST['inventory_number']);
             }
-            if(empty($_POST['organisation'])){
+            if(empty($_POST['installer_name'])){
                 $device->setOrganisation(NULL);
             }else{
                 $device->setInstallerName($_POST['installer_name']);
@@ -187,22 +207,58 @@ class DeviceController
 //        header('Location: /control/devices');
     }
 
-//    public static function updateProfile($id)
-//    {
-//        $user = new UserModel();
-//        $user->setUsername($_POST['login']);
-//        $user->setEmail($_POST['email']);
-//        $user->setFirstName($_POST['firstname']);
-//        $user->setLastname($_POST['lastname']);
-//        $user->setDescription($_POST['description']);
-//        $user->setPhone($_POST['phone']);
-//        $user->setMeasurement($_POST['measurement']);
-//        $user->setLanguage($_POST['lang']);
-////      $user->checkIsValidForRegister();
-//        $user->update($id);
-//        header('Location: /userlist');
-//    }
+    public static function updateDevice($id)
+    {
+        $device = new DeviceModel();
+        $device->setDeviceId($_POST['device-id']);
+        $device->setCustomerId($_POST['customer']);
+        $device->setOrganisation($_POST['organisation']);
+        $device->setInstallationDate($_POST['installation-date']);
+        $device->setInstallationAddres($_POST['installation-address']);
+        $device->setInventoryNumber($_POST['inventory-number']);
+        $device->setInstallerName($_POST['installer']);
+//      $user->checkIsValidForRegister();
+        $device->update($id);
+        header('Location: /control/devices');
+    }
 
-
+    public static function saveConfiguration($id)
+    {
+        var_dump($_POST);
+    }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

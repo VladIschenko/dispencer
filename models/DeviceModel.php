@@ -211,10 +211,73 @@ installation_address, gps, inventory number, installer_name) LIKE '%$search%'");
     public function findDeviceById($id)
     {
         $stmt = $this->db->query("SELECT * FROM devices WHERE id = $id;");
-        $device = $stmt->fetch();
+        $device = $stmt->fetch(PDO::FETCH_ASSOC);
         return $device;
     }
 
+    public function findIdByDeviceId($deviceId)
+    {
+        $stmt = $this->db->query("SELECT id FROM devices WHERE device_id = '$deviceId';");
+        $device = $stmt->fetchColumn();
+        return $device;
+    }
+
+    //Sms notifications
+    public function checkSmsNotifications($id)
+    {
+        $stmt = $this->db->prepare("SELECT sms_notifications FROM devices WHERE id = :id;");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $status = $stmt->fetchColumn();
+        return $status;
+    }
+
+    public function checkSmsNotificationsByUid($id)
+    {
+        $stmt = $this->db->prepare("SELECT sms_notifications FROM devices WHERE device_id = :id;");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $status = $stmt->fetchColumn();
+        return $status;
+    }
+
+    public function changeSmsNotificationsToNeeded($id)
+    {
+        $stmt = $this->db->prepare("UPDATE devices SET sms_notifications = '1' WHERE id = :id;");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+    }
+
+    public function changeSmsNotificationsToNotNeeded($id)
+    {
+        $stmt = $this->db->prepare("UPDATE devices SET sms_notifications = '0' WHERE id = :id;");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+    }
+
+
+    public function checkAddressById($id)
+    {
+        $stmt = $this->db->prepare("SELECT installation_address FROM devices WHERE device_id = :id;");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $address= $stmt->fetchColumn();
+        return $address;
+    }
+
+    public function checkLastSanitizationTime($id)
+    {
+        $stmt = $this->db->prepare("SELECT created_at FROM logs WHERE device_id = :id 
+            AND type = :type;");
+        $stmt->bindParam(':id', $id);
+        $type = "EV_SANIT_STAGE3_COMPLETE";
+        $stmt->bindParam(':type', $type);
+        $stmt->execute();
+        $time = $stmt->fetchColumn();
+        return $time;
+    }
+
+    //Firmware update
     public function checkFirmwareStatus($id)
     {
         $stmt = $this->db->prepare("SELECT firmware_status FROM devices WHERE device_id = :id;");
@@ -249,29 +312,24 @@ installation_address, gps, inventory number, installer_name) LIKE '%$search%'");
 
     public function save()
     {
-        $now = date("Y-m-d H:i:s");
         $stmt = $this->db->prepare("INSERT INTO devices(device_id,
- organisation, installation_date, installation_address, gps, inventory_number, 
- installer_name, firmware_status, created_at) 
- values (?,?,?,?,?,?,?,?,?)");
-        var_dump($stmt);
+ organisation, installation_date, installation_address, inventory_number, 
+ installer_name, firmware_status) 
+ values (?,?,?,?,?,?,?)");
         $result = $stmt->execute(array($this->getDeviceId(), $this->getOrganisation(), $this->getInstallationDate(),
-            $this->getInstallationAddres(), $this->getGps(), $this->getInventoryNumber(), $this->getInstallerName(), '0', $now));
-        echo $this->getDeviceId();
-        var_dump($result);
+            $this->getInstallationAddres(), $this->getInventoryNumber(), $this->getInstallerName(), '0'));
         return $this->db->lastInsertId();
     }
 
     public function update($id)
     {
         $stmt = $this->db->prepare('UPDATE devices SET device_id = ?, customer_id = ?, organisation = ?,
-  installation_date = ?, installation_address = ?, gps = ?, inventory_number = ?, installer_name = ?,
-  firmware_status = ?
+  installation_date = ?, installation_address = ?, inventory_number = ?, installer_name = ?
   WHERE id = ?');
-        $stmt->execute(array($this->getDeviceId(),$this->getCustomerId(),$this->getOrganisation(),
-            $this->getInstallationDate(),$this->getInstallationAddres(),$this->getGps(),
-            $this->getInventoryNumber(),$this->getInstallerName(),$this->getFirmwareStatus(),));
-//        var_dump($stmt);
+        $result = $stmt->execute(array($this->getDeviceId(),$this->getCustomerId(),$this->getOrganisation(),
+            $this->getInstallationDate(),$this->getInstallationAddres(),
+            $this->getInventoryNumber(),$this->getInstallerName(), $id));
+        var_dump($result);
         return $this->db->lastInsertId();
     }
 
@@ -284,4 +342,30 @@ installation_address, gps, inventory number, installer_name) LIKE '%$search%'");
         return false;
     }
 
+    public function getSortByIdAndChannel($deviceId, $channel)
+    {
+        $stmt = $this->db->prepare("SELECT id FROM devices WHERE device_id = '$deviceId'");
+        $stmt->execute();
+        $id = $stmt->fetchColumn();
+        if($channel == 1){
+            $stmt = $this->db->prepare("SELECT sort_1_id FROM beer_channels 
+  WHERE device_id = '$id'ORDER BY id DESC LIMIT 1");
+            $stmt->execute();
+            $beerId = $stmt->fetchColumn();
+        }elseif($channel == 2){
+            $stmt = $this->db->prepare("SELECT sort_2_id FROM beer_channels 
+  WHERE device_id = '$id'ORDER BY id DESC LIMIT 1");
+            $stmt->execute();
+            $beerId = $stmt->fetchColumn();
+        }elseif($channel == 3){
+            $stmt = $this->db->prepare("SELECT sort_3_id FROM beer_channels 
+  WHERE device_id = '$id'ORDER BY id DESC LIMIT 1");
+            $stmt->execute();
+            $beerId = $stmt->fetchColumn();
+        }
+        $stmt = $this->db->prepare("SELECT name FROM beers WHERE id = '$beerId'");
+        $stmt->execute();
+        $beerName = $stmt->fetchColumn();
+        return $beerName;
+    }
 }

@@ -16,5 +16,10 @@ use PDO;
 
 class DeviceHelper
 {
+    protected static $db;
 
+    public function __construct()
+    {
+        self::$db = Db::connect();
+    }
 }

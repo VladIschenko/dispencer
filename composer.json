@@ -1,5 +1,5 @@
 {
-    "name": "root/test1.local",
+    "name": "root/beerbook.local",
     "authors": [
         {
             "name": "Ischenko Vlad",
@@ -13,7 +13,8 @@
             "Core\\": "core",
             "Models\\": "models",
             "Graph\\": "views/templates",
-            "Handler\\": "requestHandler"
+            "Handler\\": "requestHandler",
+            "Notifications\\": "smsGateway"
         }
     }
 }

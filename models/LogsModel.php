@@ -93,8 +93,23 @@ class LogsModel
 
     public function findAll()
     {
-        $stmt = $this->db->query("SELECT * FROM logs ORDER BY created_at DESC LIMIT 10");
+        $stmt = $this->db->query("SELECT * FROM logs ORDER BY id DESC LIMIT 50");
         $logsList = $stmt->fetchAll();
         return $logsList;
+    }
+
+    public function findById($id)
+    {
+        $stmt = $this->db->query("SELECT * FROM logs WHERE device_id = '$id' ORDER BY id DESC LIMIT 50");
+        $logsList = $stmt->fetchAll();
+//        var_dump($logsList);
+        return $logsList;
+    }
+
+    public function findLogsByEventUid($eventUid)
+    {
+        $stmt = $this->db->query("SELECT * FROM logs WHERE event_uid = '$eventUid'");
+        $log = $stmt->fetchAll();
+        return $log;
     }
 }

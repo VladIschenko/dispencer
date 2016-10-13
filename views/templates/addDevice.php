@@ -38,10 +38,6 @@
 
                         </div>
                         <div class="form-group">
-                            <label>Координаты</label>
-                            <input name="gps" type="text" class="form-control" />
-                        </div>
-                        <div class="form-group">
                             <label>Инвентарный номер</label>
                             <input name="inventory_number" type="text" class="form-control" />
                         </div>

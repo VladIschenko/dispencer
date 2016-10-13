@@ -6,16 +6,8 @@
  * Time: 11:23
  */
 
-session_start();
+$request = "FW page retry 89";
 
-if(!isset($_SESSION['counter'])){
-    $_SESSION['counter'] = 0;
-}
-$count = $_SESSION['counter'];
-echo $count;
-$_SESSION['counter'] += 1;
-
-//session_destroy();
-
-
-//session_destroy();
+//$request = (substr($request,14) * 256) - 256;
+$request = (substr($request,0,13));
+echo $request;

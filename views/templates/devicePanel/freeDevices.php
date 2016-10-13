@@ -23,13 +23,10 @@
                                         <span class="caret"></span>
                                     </button>
                                     <ul class="dropdown-menu" role="menu">
-                                        <li><a href="/control/devices/<?php echo $device['id']; ?>"><span class="glyphicon glyphicon-open"></span>Просмотр</a>
+                                        <li><a href="/control/logs/<?php echo $device['device_id']; ?>"><span class="glyphicon glyphicon-list-alt"></span>Просмотр событий</a>
                                         </li>
-                                        <li><a href="#"><span class="glyphicon glyphicon-edit"></span>Редактировать</a>
+                                        <li><a href="/control/devices/<?php echo $device['id']; ?>"><span class="glyphicon glyphicon-open"></span>Управление</a>
                                         </li>
-                                        <li><a href="#"><span class="glyphicon glyphicon-remove"></span>Удалить</a>
-                                        </li>
-
                                     </ul>
                                 </div>
                             </td>

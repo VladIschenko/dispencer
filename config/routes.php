@@ -7,13 +7,10 @@
  */
 
 return $routes = array(
-//    '' => 'UserController/loginFormView',
-//    '/' => 'UserController/loginFormView',
     '/' => 'MainController/index',
     '/login' => 'UserController/login',
     '/logout' => 'UserController/logout',
     '/stats' => 'DeviceController/stats',
-//    '/processStats' => 'DeviceController/processStats',
     '/processStats' => 'DeviceController/processStats2',
     '/viewStats' => 'DeviceController/viewStats',
     '/add-user' => 'UserController/addUser',
@@ -23,9 +20,6 @@ return $routes = array(
     '/edit/:num' => 'UserController/editProfile/$1',
     '/save-edit/:num' => 'UserController/updateProfile/$1',
     '/delete/:num' => 'UserController/deleteProfile/$1',
-    '/test' => 'DeviceController/showFreeDevices',
-
-
 
     //Routes for GOD
     '/control/userlist' => 'GodController/ViewFullUserlist',
@@ -37,17 +31,33 @@ return $routes = array(
     '/control/devices' => 'DeviceController/showFullDevicelist',
     '/control/devices/:num' => 'DeviceController/deviceProfileView/$1',
     '/control/devices/firmware/:any'  => 'DeviceController/updateFirmware/$1',
+    '/control/devices/sms/:num'  => 'DeviceController/changeSmsNotification/$1',
     '/control/devices/add'  => 'DeviceController/addDevice',
     '/control/devices/save'  => 'DeviceController/saveDevice',
-    '/control/devices/edit/:num'  => 'DeviceController/editDevice',
+    '/devices/edit/:num'  => 'DeviceController/editDevice/$1',
+    '/devices/save/:num'  => 'DeviceController/updateDevice/$1',
+    '/conf-devices/save/:num'  => 'ChannelController/addSortsOnChannel/$1',
+
 
     //Routes for Logs
     '/control/logs' => 'LogsController/ViewFullLogslist',
+    '/control/logs/:any'  => 'LogsController/ViewLogsById/$1',
 
     //Routes for Options
     '/control/options' => 'OptionsController/ViewFullOptionslist',
 
     //Routes for Stats
     '/control/stats' => 'GodController/ViewStatsForGod',
+
+    //Routes for beer
+    '/beerlist' => 'BeerController/showBeerlist',
+    '/beer/edit/:num' => 'BeerController/editBeerView/$1',
+    '/beer/update/:num' => 'BeerController/editBeer/$1',
+    '/beer/add' => 'BeerController/addBeerView',
+    '/beer/save' => 'BeerController/save',
+    '/beer/delete/:num' => 'BeerController/deleteBeer/$1',
+
+    //Routes for channels
+    '' => ''
 
 );

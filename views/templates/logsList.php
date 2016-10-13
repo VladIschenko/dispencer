@@ -6,12 +6,11 @@
     <!-- end  page header -->
 </div>
 
-<div class="panel panel-default  zero-padding col-md-12">
+<div class="row">
+<div class="panel col-lg-12">
     <div class="panel-heading">
-        Пользователи
+        Логи
     </div>
-    <div class="panel-body">
-
         <div class="table-responsive">
             <table class="table table-striped table-bordered table-hover" id="dataTables-example">
                 <thead>
@@ -60,6 +59,5 @@
                 </tbody>
             </table>
         </div>
-
-    </div>
+</div>
 </div>

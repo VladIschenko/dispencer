@@ -5,14 +5,9 @@ namespace Handler;
 use Handler\Crc32;
 use Exception;
 use Core\Db;
-use Models\DeviceHelper;
-use Models\DeviceModel;
-use Models\UserModel;
-use Models\LogsModel;
 use PDO;
 
-
-class DispenserProcessor
+class DispenserProcessorFirmware
 {
 //  const CONFIG_MAX_SIZE = 16;
 //  const HEADER_MAX_SIZE = 114;
@@ -40,6 +35,9 @@ class DispenserProcessor
     const EVENT_UID = 4;
     const LEASTCRC = 2;
 
+
+
+    private $dispenser;
 
     public function __construct()
     {
@@ -195,7 +193,7 @@ class DispenserProcessor
             'time' => $time,
         );
 
-		var_dump($setting);
+		//var_dump($setting);
 
         return $setting;
     }
@@ -209,7 +207,6 @@ class DispenserProcessor
         $handle = fopen($filename, "rb");
         $contents = fread($handle, filesize($filename));
         fclose($handle);
-        echo $_SESSION['count'];
 
         if(!isset($_SESSION['header']))
         {
@@ -222,17 +219,25 @@ class DispenserProcessor
             $firmwarePart = substr($contents, $_SESSION['count'], 256);
             echo $_SESSION['header'] . $firmwarePart;
             $_SESSION['count'] += 256;
+
+			/*$data = $_SESSION['header'] . $firmwarePart;
+            $data = unpack("C*", $data);
+            echo "\n" . "DATA: ";
+            foreach ($this->addZero($data) as $value) {
+                echo $value . " ";
+            }*/
+
         }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page OK"){
                 $firmwarePart = substr($contents, $_SESSION['count'], 256);
                 echo $_SESSION['header'] . $firmwarePart;
                 $_SESSION['count'] += 256;
 
-//                $data = $_SESSION['header'] . $firmwarePart;
-//                $data = unpack("C*", $data);
-//                echo "\n" . "DATA: ";
-//                foreach ($this->addZero($data) as $value) {
-//                    echo $value . " ";
-//                }
+			/*$data = $_SESSION['header'] . $firmwarePart;
+                $data = unpack("C*", $data);
+                echo "\n" . "DATA: ";
+                foreach ($this->addZero($data) as $value) {
+                    echo $value . " ";
+                }*/
             }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page AES") {
                 $_SESSION['count'] = $_SESSION['count'] - 256;
                 If($_SESSION['count'] < 0)
@@ -244,19 +249,25 @@ class DispenserProcessor
                 $_SESSION['count'] += 256;
             }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW full OK")
             {
-                $device = new DeviceModel();
-                $deviceUidForChecking = implode("-", $this->addZero(unpack("C*", substr($_SESSION['header'], 0, self::DEVICE_UID))));
                 unset($_SESSION['count']);
                 unset($_SESSION['header']);
                 session_unset();
                 session_destroy();
-                $device->changeFirmwareStatusToNotRequired($deviceUidForChecking);
-            }else{
-            unset($_SESSION['count']);
-            unset($_SESSION['header']);
+            }elseif(substr($_POST['ETH_PACKET_FW_UPDATE_ANSWER'],0,13) == "FW page retry"){
+            $_SESSION['count'] = (substr($_POST['ETH_PACKET_FW_UPDATE_ANSWER'],14) * 256) - 256;
+            $firmwarePart = substr($contents, $_SESSION['count'], 256);
+            echo $_SESSION['header'] . $firmwarePart;
+            $_SESSION['count'] += 256;
+        }else{
             session_unset();
             session_destroy();
         }
+
+		$post = $_POST['ETH_PACKET_FW_UPDATE_ANSWER'];
+		$log = $_SESSION['count']/256 . " " . $post;
+		$f = fopen("firmware.log", "w");
+		fwrite($f, $log);
+		fclose($f);
 //        echo "</br>";
 //        echo "COUNT: " . $_SESSION['count'];
 //        echo "</br>";
@@ -266,12 +277,10 @@ class DispenserProcessor
 
     public function processPackage($header, $data)
     {
-        $deviceUidForChecking = implode("-", $this->addZero(unpack("C*", substr($header, 0, self::DEVICE_UID))));
-        $device = new DeviceModel();
-        $firmwareStatus = $device->checkFirmwareStatus($deviceUidForChecking);
-        if($firmwareStatus == 1){
+        if(true){
             $deviceUid = substr($header, 0, 6);
             $packetType = pack("C*", 4, 0);
+
             $checksum  = $deviceUid . $packetType;
             $checksum = Crc32::getCrc32($checksum );
             $checksum = dechex($checksum);
@@ -290,6 +299,7 @@ class DispenserProcessor
 
             $this->updateFirmware($header);
         }else{
+
             $deviceUid = $this->addZero(unpack("C*", substr($header, 0, self::DEVICE_UID)));
             $packetType = $this->addZero(unpack("C*", strrev(substr($header, self::DEVICE_UID, self::PACKET_TYPE))));
 //        $data_size = array_reverse($this->addZero(unpack("C*", (substr($header, self::DEVICE_UID + self::PACKET_TYPE, self::DATA_SIZE)))));
@@ -314,7 +324,8 @@ class DispenserProcessor
                 $this->saveSetting($header, $data);
             }
 
-            $device->changeFirmwareStatusToNotRequired($deviceUidForChecking);
+//            var_dump($header);
+            return $header;
         }
     }
 
@@ -337,9 +348,9 @@ class DispenserProcessor
         {
             if($crcForPacket[$i] == '245a4225') //245a4225 is crc32 for empty packet like ff ff ff
             {
-////				header("HTTP/1.1 400 The empty packet");
-//            }elseif(count($logs[$i]) < self::PACKET){
-//				//header("HTTP/1.1 400 Wrong size of packet");
+//				header("HTTP/1.1 400 The empty packet");
+            }elseif(count($logs[$i]) < self::PACKET){
+				//header("HTTP/1.1 400 Wrong size of packet");
         }else {
                 $leastCrc = implode("", array_reverse(array_slice($logs[$i], 14, self::LEASTCRC)));
 
@@ -351,6 +362,7 @@ class DispenserProcessor
                     $time = hexdec(implode("", array_reverse(array_slice($logs[$i], 6, self::TIME))));
                     $time = date('Y-m-d h:i:s', $time);
                     $event_uid = hexdec(implode("", array_reverse(array_slice($logs[$i], 10, self::EVENT_UID))));
+                    echo $event_uid;
 
                     $config[$i]=array(
                         'event_type' => $event_type,
@@ -364,7 +376,7 @@ class DispenserProcessor
 //                }
             }
         }
-//		var_dump($config);
+		//var_dump($config);
         return $config;
     }
     //END FOR PROCESSING DATA
@@ -373,25 +385,13 @@ class DispenserProcessor
     //FOR SAVING DATA
     public function saveLogs($header, $logs)
     {
-        $user = new UserModel();
-        $device = new DeviceModel();
-        $logsModel = new LogsModel();
-        $phone = $user->getPhoneByDeviceId($header['device_uid']);
-        $sms = $device->checkSmsNotificationsByUid($header['device_uid']);
-        $address = $device->checkAddressById($header['device_uid']);
-        for($i=0;$i<count($logs)-1;$i++)
+        $now = date("Y-m-d H:i:s");
+//        var_dump($logs);
+        for($i=0;$i<count($logs);$i++)
         {
-
-//            $msg .=  $this->processEventTypeToText($logs[$i]['event_type']) . " ";
-//
-//            $mailStatus = mail('vis@kb-karat.com', 'My Subject', 'aa');
-            //var_dump($mailStatus);
-
             $stmt = $this->db->prepare("INSERT INTO logs(type, channel,
- volume, time, device_id, event_uid)
- values (?,?,?,?,?,?)");
-            if(!$logsModel->findLogsByEventUid($logs[$i]['event_uid']))
-            {
+ volume, time, device_id, event_uid, created_at)
+ values (?,?,?,?,?,?,?)");
             $result = $stmt->execute(
                 array(
                     $logs[$i]['event_type'],
@@ -399,42 +399,11 @@ class DispenserProcessor
                     $logs[$i]['volume'],
                     $logs[$i]['time'],
                     $header['device_uid'],
-                    $logs[$i]['event_uid'])
+                    $logs[$i]['event_uid'],
+                    $now)
             );
         }
-
-            $sort = $device->getSortByIdAndChannel($header['device_uid'], $logs[$i]['channel']);
-            if($sms == 1 && $logs[$i]['event_type'] == 'EV_SANIT_STAGE3_COMPLETE')
-            {
-                $msg = "Санитация проведена успешно. " . $address . ". " . $sort;
-                $sender =  ".";
-                list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
-            }elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_FLUSHING_COMPLETE'){
-                $msg = "Промывка проведена успешно. " . $address . ". " . $sort;
-                $sender =  ".";
-                list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
-            }elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_FLOW_LOW'){
-                $msg = "Недостаточная мощность потока. " . $address . ". " . $sort;
-                $sender =  ".";
-                list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
-            }/*elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_CONCENTR_LEVEL_LO'){
-                $msg = "Недостаточный уровень концентрата. " . $address . ". " . $sort;
-                list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 1);
-            }elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_CLEANSER_LEVEL_LO'){
-                $msg = "Недостаточный уровень моющего средства. " . $address . "." . $sort;
-                list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 1);
-            }*/elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_WATER_LEVEL_LO'){
-                $msg = "Недостаточный уровень воды. " . $address . ". " . $sort;
-                list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 1);
-            }elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_WATER_NO_DATA'){
-                $msg = "Нет данных от датчика уровня воды. " . $address . ". " . $sort;
-                $sender =  ".";
-                list($sms_id, $sms_cnt, $sender) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
-            }
-        }
-        header("HTTP/1.1 202 Good job");
     }
-
 
     public function saveSetting($header, $setting)
     {
@@ -478,49 +447,10 @@ class DispenserProcessor
                 $now)
         );
 //        var_dump($result);
-        header("HTTP/1.1 202 Good job");
     }
     //END FOR SAVING DATA
 
     //FOR ENUM DATA
-
-    public function processEventTypeToText($eventType)
-    {
-        $msgs = array(
-            'Ежедневная промывка начата.' => 'EV_FLUSHING_BEGIN',
-            'Ежедневная промывка завершена.' => 'EV_FLUSHING_COMPLETE',
-            'Начата санитация.' => 'EV_SANIT_BEGIN',
-            'Первый этап санитации успешно завершен.' => 'EV_SANIT_STAGE1_COMPLETE',
-            'Второй этап санитации успешно завершен.' => 'EV_SANIT_STAGE2_COMPLETE',
-            'Третий этап санитации успешно завершен.' => 'EV_SANIT_STAGE3_COMPLETE',
-
-            'Недостаточный уровень воды.' => 'EV_ERR_WATER_LEVEL_LO',
-            'Нет данных от датчика уровня воды.' => 'EV_ERR_WATER_NO_DATA',
-            'Ошибка датчика уровня воды устранена.' => 'EV_ERR_WATER_LEVEL_OK',
-
-            'Недостаточный уровень моющего средства.' => 'EV_ERR_CLEANSER_LEVEL_LO',
-            'Нет данных от датчика моющего средства' => 'EV_ERR_CLEANSER_NO_DATA',
-            'Ошибка датчика уровня моющего средства устранена.' => 'EV_ERR_CLEANSER_LEVEL_OK',
-            'Переполнение бака раствора.' => 'EV_ERR_CLEANSER_LEVEL_HI',
-
-            'Недостаточный уровень концентрата.' => 'EV_ERR_CONCENTR_LEVEL_LO',
-            'Нет данных от датчика концентрата.' => 'EV_ERR_CONCENTR_NO_DATA',
-            'Ошибка датчика уровня концентрата устранена.' => 'EV_ERR_CONCENTR_LEVEL_OK',
-
-            'Недостаточная мощность потока через систему.' => 'EV_ERR_FLOW_LOW',
-
-            'Все сообщения об ошибках сброшены.' => 'EV_ERRORS_CLEARED',
-            'Процесс прерван пользователем.' => 'EV_STOP_PRESSED',
-
-            'Записаны показания с пивного расходомера.' => 'EV_BEER_FLOWMETER',
-
-            'Зарегистрирован старт системы.' => 'EV_STARTUP',
-        );
-
-        $msg = array_search($eventType, $msgs);
-        return $msg;
-    }
-
     public function processEventType($typeCode)
     {
         $types = array(
@@ -550,8 +480,6 @@ class DispenserProcessor
             'EV_STOP_PRESSED' => '13',
 
             'EV_BEER_FLOWMETER' => '14',
-
-            'EV_STARTUP' => '15',
             );
         $type = array_search($typeCode, $types);
         return $type;

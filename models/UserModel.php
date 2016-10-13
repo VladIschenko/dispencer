@@ -207,13 +207,29 @@ class UserModel {
         return $status;
     }
 
-    public static function getIdByLogin($login)
+    public function getIdByLogin($login)
     {
         $db = Db::connect();
         $stmt = $db->prepare("SELECT id FROM users WHERE login = ?");
         $stmt->execute(array($login));
         $id = $stmt->fetchColumn();
         return $id;
+    }
+
+    public function getPhoneByDeviceId($deviceId)
+    {
+        $stmt = $this->db->query("SELECT phone FROM users, devices WHERE users.id = devices.customer_id AND devices.device_id = '$deviceId';");
+        $stmt->execute();
+        $phone = $stmt->fetchColumn();
+        return $phone;
+    }
+
+    public function getOrganisationById($id)
+    {
+        $stmt = $this->db->query("SELECT organisation FROM users WHERE id = '$id';");
+        $stmt->execute();
+        $phone = $stmt->fetchColumn();
+        return $phone;
     }
 
     public function save()
@@ -225,7 +241,7 @@ class UserModel {
         $result = $stmt->execute(array($this->getUsername(), $this->getPass(), $this->getEmail(), $this->getFirstName(),
             $this->getLastname(), $this->getDescription(), $this->getOrganisation(), $this->getPhone(), $this->getMeasurement(),
             $this->getLanguage(), $this->getGroupName(), $now));
-        echo $result;
+        //echo $result;
         return $this->db->lastInsertId();
     }
 

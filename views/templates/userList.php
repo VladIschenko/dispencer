@@ -93,7 +93,6 @@
     <!--End Default Pannel, Primary Panel And Success Panel   -->
 </div>
 
-
 <div class="row">
         <!-- Advanced Tables -->
         <div class="panel panel-default  zero-padding col-lg-12">
@@ -152,9 +151,8 @@
                                 </tbody>
                     </table>
                 </div>
-
             </div>
         </div>
-</div>
         <!--End Advanced Tables -->
+</div>
 

@@ -8,7 +8,10 @@ use Core\Db;
 
 define('ROOT', __DIR__ .'/');
 
+
 session_start();
+
+var_dump($_SESSION);
 
 require_once ROOT . '/vendor/autoload.php';
 require_once 'config/routes.php';
