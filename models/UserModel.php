@@ -178,11 +178,60 @@ class UserModel {
         return $userList;
     }
 
+    public function findAllGodType()
+    {
+        $stmt = $this->db->query("SELECT * FROM users WHERE group_name = 'god' ORDER BY created_at DESC");
+        $stmt->execute();
+        $userList = $stmt->fetchAll();
+        return $userList;
+    }
+
+    public function findAllSuperadminType()
+    {
+        $stmt = $this->db->query("SELECT * FROM users WHERE group_name = 'superadmin' ORDER BY created_at DESC");
+        $stmt->execute();
+        $userList = $stmt->fetchAll();
+        return $userList;
+    }
+
+    public function findAllAdminType()
+    {
+        $stmt = $this->db->query("SELECT * FROM users WHERE group_name = 'admin' ORDER BY created_at DESC");
+        $stmt->execute();
+        $userList = $stmt->fetchAll();
+        return $userList;
+    }
+
+    public function findAllTechnicianType()
+    {
+        $stmt = $this->db->query("SELECT * FROM users WHERE group_name = 'technician' ORDER BY created_at DESC");
+        $stmt->execute();
+        $userList = $stmt->fetchAll();
+        return $userList;
+    }
+
+    public function findAllSuperuserType()
+    {
+        $stmt = $this->db->query("SELECT * FROM users WHERE group_name = 'superuser' ORDER BY created_at DESC");
+        $stmt->execute();
+        $userList = $stmt->fetchAll();
+        return $userList;
+    }
+
+    public function findAllUserType()
+    {
+        $stmt = $this->db->query("SELECT * FROM users WHERE group_name = 'user' ORDER BY created_at DESC");
+        $stmt->execute();
+        $userList = $stmt->fetchAll();
+        return $userList;
+    }
+
     public function findByOrganisation($organisation)
     {
         $stmt = $this->db->query("SELECT * FROM users WHERE organisation = '$organisation' ORDER BY created_at DESC");
         $stmt->execute();
         $userList = $stmt->fetchAll();
+        return $userList;
         return $userList;
     }
 
@@ -207,7 +256,7 @@ class UserModel {
         return $status;
     }
 
-    public function getIdByLogin($login)
+    public static function getIdByLogin($login)
     {
         $db = Db::connect();
         $stmt = $db->prepare("SELECT id FROM users WHERE login = ?");
@@ -248,17 +297,18 @@ class UserModel {
     public function update($id)
     {
         $stmt = $this->db->prepare('UPDATE users SET login = ?, email = ?, first_name = ?,
-  last_name = ?, description = ?, phone = ?, measurement = ?, lang = ? 
+  last_name = ?, description = ?, organisation = ?, phone = ?, measurement = ?, lang = ? 
   WHERE id = ?');
         $username = $this->getUsername();
         $email = $this->getEmail();
         $firstName = $this->getFirstName();
         $lastName = $this->getLastname();
         $description = $this->getDescription();
+        $organisation = $this->getOrganisation();
         $phone = $this->getPhone();
         $measurement = $this->getMeasurement();
         $language = $this->getLanguage();
-        $stmt->execute(array($username, $email, $firstName, $lastName, $description, $phone, $measurement, $language, $id));
+        $stmt->execute(array($username, $email, $firstName, $lastName, $description, $organisation, $phone, $measurement, $language, $id));
 //        var_dump($stmt);
         return $this->db->lastInsertId();
     }
@@ -313,7 +363,12 @@ AND action = :action;");
         return $permission;
     }
 
-
+    public function getAllPhonesFromOrganisation($organisation)
+    {
+        $stmt = $this->db->query("SELECT phone FROM users WHERE organisation = '$organisation'");
+        $phones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $phones;
+    }
 
 
         //Session functions

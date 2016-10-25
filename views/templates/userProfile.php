@@ -10,7 +10,7 @@
         <!-- Advanced Tables -->
         <div class="panel panel-default zero-padding col-md-6 col-md-offset-3">
             <div class="panel-heading">
-                <p><a href="/userlist" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-chevron-left"></span>К списку пользователей</a></p>
+                <p><a href="/control/userlist" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-chevron-left"></span>К списку пользователей</a></p>
                 <h3><?php echo $data['login']; ?></h3>
             </div>
             <div class="panel-body ">
@@ -53,8 +53,13 @@
                         </tr>
                         </tbody>
                     </table>
+                    <?php if($_SESSION['type'] == 'god'){ ?>
+
                     <a href="/edit/<?php echo $data['id']; ?>" class="btn btn-primary margin-left"><span class="glyphicon glyphicon-edit"></span>Редактировать</a>
                     <a href="user/<?php echo $data['id']; ?>" class="btn btn-danger margin-left"><span class="glyphicon glyphicon-remove"></span>Удалить</a>
+
+                    <?php } ?>
+
                 </div>
 
             </div>

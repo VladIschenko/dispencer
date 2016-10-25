@@ -9,6 +9,12 @@
 namespace Controllers;
 
 use Core\View;
+use Models\UserModel;
+use Models\DeviceModel;
+use Models\LogsModel;
+require "smsGateway/smsc_api.php";
+
+
 
 class MainController
 {
@@ -33,4 +39,51 @@ class MainController
         $view = new View();
         echo $view->render('main');
     }
+
+    public static function sendPage()
+    {
+        $view = new View();
+        echo $view->render('CRUTCH');
+    }
+
+    public static function sendSms()  //CRUTCH!!!!!
+    {
+        $user = new UserModel();
+        $device = new DeviceModel();
+        $deviceUid = '00-04-a3-69-a8-03';
+        $address = $device->getAddressById($deviceUid);
+        $organisation = $device->getOrganisationById($deviceUid);
+        $phones = $user->getAllPhonesFromOrganisation($organisation);
+        $message = $_POST['message'];
+        $sort = $_POST['sort'];
+        $msg = $organisation . " " . $address . " " . $message . " " . $sort;
+        for($i=0; $i<count($phones); $i++)
+        {
+            $phone = $phones[$i]['phone'];
+            list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 0, 0, 0, 0);
+        }
+        header('Location: /send');
+
+    }
+
+    public static function statistic()
+    {
+        if (!isset($_SESSION['login'])) {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            echo View::render('stats');
+        }
+    }
+
+    public static function adminStatistic()
+    {
+        if (!isset($_SESSION['login'])) {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            echo View::render('statsForAdmin');
+        }
+    }
+
 }

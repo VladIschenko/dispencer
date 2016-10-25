@@ -17,6 +17,9 @@
 
                 <div class="table-responsive">
                     <form method="POST" action="/devices/save/<?php echo $data['id'];?>">
+
+                        <?php if($_SESSION['type'] == 'god') {?>
+
                         <div class="form-group">
                             <label>ID Устройства</label>
                             <input name="device-id" type="text" class="form-control" value="<?php echo $data['device_id'];?>" />
@@ -29,6 +32,9 @@
                             <label>Организация</label>
                             <input name="organisation" type="text" class="form-control" value="<?php echo $data['organisation'];?>" />
                         </div>
+
+                        <?php }?>
+
                         <div class="form-group">
                             <label>Дата установки</label>
                             <input name="installation-date" type="text" class="form-control" value="<?php echo $data['installation_date'];?>"/>

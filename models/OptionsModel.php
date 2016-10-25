@@ -43,6 +43,8 @@ class OptionsModel
     private $sanitizationMinInterval;
     private $sanitizationMaxInterval;
     private $time;
+    private $lastDispatch;
+    private $lastTimeUpdate;
 
 
     public function getDeviceId()
@@ -305,8 +307,29 @@ class OptionsModel
         $this->time = $time;
     }
 
+    public function getLastDispatch()
+    {
+        return $this->lastDispatch;
+    }
 
-    public function __construct() {
+    public function setLastDispatch($lastDispatch)
+    {
+        $this->lastDispatch = $lastDispatch;
+    }
+
+    public function getLastTimeUpdate()
+    {
+        return $this->lastTimeUpdate;
+    }
+
+    public function setLastTimeUpdate($lastTimeUpdate)
+    {
+        $this->lastTimeUpdate = $lastTimeUpdate;
+    }
+
+
+    public function __construct()
+    {
         $this->db = Db::connect();
     }
 
@@ -316,4 +339,147 @@ class OptionsModel
         $optionsList = $stmt->fetchAll();
         return $optionsList;
     }
+
+    public function findById($deviceUid)
+    {
+        $stmt = $this->db->query("SELECT * FROM options WHERE device_id = '$deviceUid'");
+        $option = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $option;
+    }
+
+    public function checkExistence($deviceid)
+    {
+        $stmt = $this->db->query("SELECT * FROM options WHERE device_id = '$deviceid'");
+        $exist = $stmt->fetchAll();
+        if ($exist == true) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function checkLastDispatch($deviceUid)
+    {
+        $stmt = $this->db->query("SELECT last_dispatch FROM options WHERE device_id = '$deviceUid';");
+        $lastDispatch = $stmt->fetchColumn();
+        return $lastDispatch;
+    }
+
+    public function checkUpdatedAt($deviceUid)
+    {
+        $stmt = $this->db->query("SELECT updated_at FROM options WHERE device_id = '$deviceUid';");
+        $lastDispatch = $stmt->fetchColumn();
+        return $lastDispatch;
+    }
+
+    public function checkTime($deviceUid)
+    {
+        $stmt = $this->db->query("SELECT time FROM options WHERE device_id = '$deviceUid';");
+        $time = $stmt->fetchColumn();
+        return $time;
+    }
+
+    public function checkLastTimeUpdate($deviceUid)
+    {
+        $stmt = $this->db->query("SELECT last_time_update FROM options WHERE device_id = '$deviceUid';");
+        $time = $stmt->fetchColumn();
+        return $time;
+    }
+
+    public function lastDispatchUpdate($deviceUid)
+    {
+        $now = date("Y-m-d H:i:s");
+        $stmt = $this->db->prepare("UPDATE devices SET last_dispatch = '$now' WHERE device_id = '$deviceUid';");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+    }
+
+    public function save($deviceUid)
+    {
+        $options = new OptionsModel();
+        if($options->checkExistence($deviceUid))
+        {
+            $stmt = $this->db->prepare("UPDATE options SET hw_config = ?,
+ sensor_1 = ?, sensor_2 = ?, start_volume_1 = ?, start_volume_2 = ?, start_volume_3 = ?, end_volume_1 = ?,
+ end_volume_2 = ?, end_volume_3 = ?, cleanser_volume_1 = ?, cleanser_volume_2 = ?, cleanser_volume_3 = ?,
+ cleanser_delay_1 = ?, cleanser_delay_2 = ?, cleanser_delay_3 = ?, concentrate_volume = ?, water_mix_volume = ?,
+ flow_speed_min = ?, 	flowmeter_performance_1 = ?, 	flowmeter_performance_2 = ?, 	flowmeter_performance_3 = ?,
+ flowmeter_performance_4 = ?, sanitization_min_interval = ?, sanitization_max_interval = ?, time = ?,
+ last_time_update = ?
+ WHERE device_id = ?");
+            if($this->checkTime($deviceUid) == $this->getTime())
+            {
+                $lastTimeUpdate = $this->checkLastTimeUpdate($deviceUid);
+            }else{
+                $lastTimeUpdate = date("Y-m-d H:i:s");
+            }
+        } else {
+            $stmt = $this->db->prepare("INSERT INTO options(hw_config,
+ sensor_1, sensor_2, start_volume_1, start_volume_2, start_volume_3, end_volume_1,
+ end_volume_2, end_volume_3, cleanser_volume_1, cleanser_volume_2, cleanser_volume_3,
+ cleanser_delay_1, cleanser_delay_2, cleanser_delay_3, concentrate_volume, water_mix_volume,
+ flow_speed_min, flowmeter_performance_1, flowmeter_performance_2, flowmeter_performance_3,
+ flowmeter_performance_4, sanitization_min_interval, sanitization_max_interval, time,
+  last_time_update, device_id)
+ values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+            $lastTimeUpdate = date("Y-m-d H:i:s");
+        }
+
+        var_dump($stmt);
+
+        $result = $stmt->execute(
+            array(
+                $this->getHwConfig(),
+                $this->getSensor1(),
+                $this->getSensor2(),
+                $this->getStartVolume1(),
+                $this->getStartVolume2(),
+                $this->getStartVolume3(),
+                $this->getEndVolume1(),
+                $this->getEndVolume2(),
+                $this->getEndVolume3(),
+                $this->getCleanserVolume1(),
+                $this->getCleanserVolume2(),
+                $this->getCleanserVolume3(),
+                $this->getCleanserDelay1(),
+                $this->getCleanserDelay2(),
+                $this->getCleanserDelay3(),
+                $this->getConcentrateVolume(),
+                $this->getWaterMixVolume(),
+                $this->getFlowSpeedMin(),
+                $this->getFlowmeterPerformance1(),
+                $this->getFlowmeterPerformance2(),
+                $this->getFlowmeterPerformance3(),
+                $this->getFlowmeterPerformance4(),
+                $this->getSanitizationMinInterval(),
+                $this->getSanitizationMaxInterval(),
+                $this->getTime(),
+                $lastTimeUpdate,
+                $deviceUid
+            )
+            );
+        var_dump($result);
+    }
+
+    public function processHwConfig($congifNumber)
+    {
+        $hwConfigs = array(
+            'HW_BASE' => '1',
+            'HW_PLUMBING' => '2',
+            'HW_MIXER_!FM' => '3',
+            'HW_MIXER_4FM' => '4',
+        );
+        $number = array_search($congifNumber, $hwConfigs);
+        return $number;
+    }
+
 }
+
+
+
+
+
+
+
+
+

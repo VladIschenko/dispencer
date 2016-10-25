@@ -1,117 +1,123 @@
-$(function() {
-    //  morris Area chart on dashboard///
-    Morris.Area({
-        element: 'morris-area-chart',
-        data: [{
-            period: '2010 Q1',
-            iphone: 2666,
-            ipad: null,
-            itouch: 2647
-        }, {
-            period: '2010 Q2',
-            iphone: 2778,
-            ipad: 2294,
-            itouch: 2441
-        }, {
-            period: '2010 Q3',
-            iphone: 4912,
-            ipad: 1969,
-            itouch: 2501
-        }, {
-            period: '2010 Q4',
-            iphone: 3767,
-            ipad: 3597,
-            itouch: 5689
-        }, {
-            period: '2011 Q1',
-            iphone: 6810,
-            ipad: 1914,
-            itouch: 2293
-        }, {
-            period: '2011 Q2',
-            iphone: 5670,
-            ipad: 4293,
-            itouch: 1881
-        }, {
-            period: '2011 Q3',
-            iphone: 4820,
-            ipad: 3795,
-            itouch: 1588
-        }, {
-            period: '2011 Q4',
-            iphone: 15073,
-            ipad: 5967,
-            itouch: 5175
-        }, {
-            period: '2012 Q1',
-            iphone: 10687,
-            ipad: 4460,
-            itouch: 2028
-        }, {
-            period: '2012 Q2',
-            iphone: 8432,
-            ipad: 5713,
-            itouch: 1791
-        }],
-        xkey: 'period',
-        ykeys: ['iphone', 'ipad', 'itouch'],
-        labels: ['iPhone', 'iPad', 'iPod Touch'],
-        pointSize: 2,
-        hideHover: 'auto',
-        resize: true
-    });
-    //  morris donut chart on dashboard///
+
+$(function () {
     Morris.Donut({
         element: 'morris-donut-chart',
         data: [{
-            label: "Download Sales",
-            value: 12
+            label: "Таежный бур",
+            value: 32
         }, {
-            label: "In-Store Sales",
+            label: "Стелла",
             value: 30
+        },{
+            label: "Эль",
+            value: 22
+        },{
+            label: "Лагер",
+            value: 14
         }, {
-            label: "Mail-Order Sales",
+            label: "Черниговское",
             value: 20
         }],
         resize: true
     });
-
-    Morris.Bar({
-        element: 'morris-bar-chart',
+    Morris.Area({
+        element: 'morris-area-chart',
         data: [{
-            y: '2006',
-            a: 100,
-            b: 90
+            period: '2010-10-10',
+            bur: 50,
+            stella: 20,
+            chernigov: 33
         }, {
-            y: '2007',
-            a: 75,
-            b: 65
+            period: '2010-10-11',
+            bur: 45,
+            stella: 47,
+            chernigov: 30
         }, {
-            y: '2008',
-            a: 50,
-            b: 40
+            period: '2010-10-12',
+            bur: 24,
+            stella: 37,
+            chernigov: 32
         }, {
-            y: '2009',
-            a: 75,
-            b: 65
+            period: '2010-10-13',
+            bur: 53,
+            stella: 42,
+            chernigov: 21
         }, {
-            y: '2010',
-            a: 50,
-            b: 40
+            period: '2010-10-14',
+            bur: 42,
+            stella: 53,
+            chernigov: 51
         }, {
-            y: '2011',
-            a: 75,
-            b: 65
+            period: '2010-10-15',
+            bur: 78,
+            stella: 56,
+            chernigov: 60
         }, {
-            y: '2012',
-            a: 100,
-            b: 90
+            period: '2010-10-16',
+            bur: 50,
+            stella: 20,
+            chernigov: 33
+        }, {
+            period: '2010-10-17',
+            bur: 42,
+            stella: 29,
+            chernigov: 12
+        }, {
+            period: '2010-10-18',
+            bur: 50,
+            stella: 20,
+            chernigov: 33
+        }, {
+            period: '2010-10-19',
+            bur: 60,
+            stella: 44,
+            chernigov: 52
         }],
-        xkey: 'y',
-        ykeys: ['a', 'b'],
-        labels: ['Series A', 'Series B'],
+        xkey: 'period',
+        ykeys: ['bur', 'stella', 'chernigov'],
+        labels: ['Таежный бур', 'Стелла', 'Черниговское'],
+        pointSize: 2,
         hideHover: 'auto',
         resize: true
     });
-
+    Morris.Line({
+        element: 'sell',
+        data: [{
+            period: '2010-1',
+            bur:14
+        }, {
+            period: '2010-2',
+            bur: 6
+        }, {
+            period: '2010-3',
+            bur: 9
+        }, {
+            period: '2010-4',
+            bur: 12
+        }, {
+            period: '2010-5',
+            bur: 10
+        }, {
+            period: '2010-6',
+            bur: 13
+        }, {
+            period: '2010-7',
+            bur: 12
+        }, {
+            period: '2010-8',
+            bur: 13
+        }, {
+            period: '2010-9',
+            bur: 9
+        }, {
+            period: '2010-10',
+            bur: 8
+        }],
+        xkey: 'period',
+        ykeys: ['bur'],
+        labels: ['Продано'],
+        pointSize: 2,
+        hideHover: 'auto',
+        resize: true
+    });
 });

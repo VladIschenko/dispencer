@@ -203,41 +203,65 @@ class DispenserProcessorFirmware
         header("Expires:");
         header("Cache-Control:");
 
-        $filename = "firmware4.bin";
+        $filename = "firmware5.bin";
         $handle = fopen($filename, "rb");
         $contents = fread($handle, filesize($filename));
         fclose($handle);
+
 
         if(!isset($_SESSION['header']))
         {
             $_SESSION['header'] = $header;
         }
-
-        if(!isset($_SESSION['count']) or $_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW full AES")
+        if(!isset($_SESSION['status']))
         {
-            $_SESSION['count'] = 0;
-            $firmwarePart = substr($contents, $_SESSION['count'], 256);
-            echo $_SESSION['header'] . $firmwarePart;
-            $_SESSION['count'] += 256;
+            $_SESSION['status'] = 'onUpdate';
+        }
+        if(!isset($_SESSION['count']))
+        {
+            $_SESSION['status'] = 'restart';
+        }
 
-			/*$data = $_SESSION['header'] . $firmwarePart;
-            $data = unpack("C*", $data);
-            echo "\n" . "DATA: ";
-            foreach ($this->addZero($data) as $value) {
-                echo $value . " ";
-            }*/
+        $checkPage = file_get_contents('firmware.log');
 
-        }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page OK"){
+        if($_SESSION['status'] = 'restart' && $checkPage != 0){
+            if(!isset($_SESSION['count']))
+            {
+                $_SESSION['count'] = file_get_contents('firmware.log');
                 $firmwarePart = substr($contents, $_SESSION['count'], 256);
                 echo $_SESSION['header'] . $firmwarePart;
                 $_SESSION['count'] += 256;
 
-			/*$data = $_SESSION['header'] . $firmwarePart;
+                /*$data = $_SESSION['header'] . $firmwarePart;
                 $data = unpack("C*", $data);
                 echo "\n" . "DATA: ";
                 foreach ($this->addZero($data) as $value) {
                     echo $value . " ";
                 }*/
+
+            }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW full AES"){
+                $_SESSION['count'] = 0;
+                $firmwarePart = substr($contents, $_SESSION['count'], 256);
+                echo $_SESSION['header'] . $firmwarePart;
+                $_SESSION['count'] += 256;
+
+                /*$data = $_SESSION['header'] . $firmwarePart;
+                    $data = unpack("C*", $data);
+                    echo "\n" . "DATA: ";
+                    foreach ($this->addZero($data) as $value) {
+                        echo $value . " ";
+                    }*/
+            }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page OK"){
+                $firmwarePart = substr($contents, $_SESSION['count'], 256);
+                echo $_SESSION['header'] . $firmwarePart;
+                $_SESSION['count'] += 256;
+
+                /*$data = $_SESSION['header'] . $firmwarePart;
+                    $data = unpack("C*", $data);
+                    echo "\n" . "DATA: ";
+                    foreach ($this->addZero($data) as $value) {
+                        echo $value . " ";
+                    }*/
             }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page AES") {
                 $_SESSION['count'] = $_SESSION['count'] - 256;
                 If($_SESSION['count'] < 0)
@@ -254,17 +278,91 @@ class DispenserProcessorFirmware
                 session_unset();
                 session_destroy();
             }elseif(substr($_POST['ETH_PACKET_FW_UPDATE_ANSWER'],0,13) == "FW page retry"){
-            $_SESSION['count'] = (substr($_POST['ETH_PACKET_FW_UPDATE_ANSWER'],14) * 256) - 256;
-            $firmwarePart = substr($contents, $_SESSION['count'], 256);
-            echo $_SESSION['header'] . $firmwarePart;
-            $_SESSION['count'] += 256;
+
+                if(!isset($_SESSION['countRetry'])){
+                    $_SESSION['countRetry'] = 0;
+                }
+
+                $_SESSION['count'] = $_SESSION['count'] - 256;
+                $firmwarePart = substr($contents, $_SESSION['count'], 256);
+                echo $_SESSION['header'] . $firmwarePart;
+
+                if($_SESSION['countRetry'] = 0){
+                    $_SESSION['countRetry'] += 1;
+                }elseif ($_SESSION['countRetry'] = 1){
+                    $_SESSION['count'] += 256;
+                    $_SESSION['countRetry'] = 0;
+                }
+
+            }elseif(filesize($filename)){
+                session_unset();
+                session_destroy();
+            }
         }else{
-            session_unset();
-            session_destroy();
+            if(!isset($_SESSION['count']))
+            {
+                $_SESSION['count'] = file_get_contents('firmware.log');
+                $firmwarePart = substr($contents, $_SESSION['count'], 256);
+                echo $_SESSION['header'] . $firmwarePart;
+                $_SESSION['count'] += 256;
+
+                /*$data = $_SESSION['header'] . $firmwarePart;
+                $data = unpack("C*", $data);
+                echo "\n" . "DATA: ";
+                foreach ($this->addZero($data) as $value) {
+                    echo $value . " ";
+                }*/
+
+            }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW full AES"){
+                $_SESSION['count'] = 0;
+                $firmwarePart = substr($contents, $_SESSION['count'], 256);
+                echo $_SESSION['header'] . $firmwarePart;
+                $_SESSION['count'] += 256;
+
+                /*$data = $_SESSION['header'] . $firmwarePart;
+                    $data = unpack("C*", $data);
+                    echo "\n" . "DATA: ";
+                    foreach ($this->addZero($data) as $value) {
+                        echo $value . " ";
+                    }*/
+            }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page OK"){
+                $firmwarePart = substr($contents, $_SESSION['count'], 256);
+                echo $_SESSION['header'] . $firmwarePart;
+                $_SESSION['count'] += 256;
+
+                /*$data = $_SESSION['header'] . $firmwarePart;
+                    $data = unpack("C*", $data);
+                    echo "\n" . "DATA: ";
+                    foreach ($this->addZero($data) as $value) {
+                        echo $value . " ";
+                    }*/
+            }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW page AES") {
+                $_SESSION['count'] = $_SESSION['count'] - 256;
+                If($_SESSION['count'] < 0)
+                {
+                    $_SESSION['count'] = 0;
+                }
+                $firmwarePart = substr($contents, $_SESSION['count'], 256);
+                echo $_SESSION['header'] . $firmwarePart;
+                $_SESSION['count'] += 256;
+            }elseif($_POST['ETH_PACKET_FW_UPDATE_ANSWER'] == "FW full OK")
+            {
+                unset($_SESSION['count']);
+                unset($_SESSION['header']);
+                session_unset();
+                session_destroy();
+            }elseif(substr($_POST['ETH_PACKET_FW_UPDATE_ANSWER'],0,13) == "FW page retry"){
+                $_SESSION['count'] = (substr($_POST['ETH_PACKET_FW_UPDATE_ANSWER'],14) * 256) - 256;
+                $firmwarePart = substr($contents, $_SESSION['count'], 256);
+                echo $_SESSION['header'] . $firmwarePart;
+                $_SESSION['count'] += 256;
+            }else{
+                session_unset();
+                session_destroy();
+            }
         }
 
-		$post = $_POST['ETH_PACKET_FW_UPDATE_ANSWER'];
-		$log = $_SESSION['count']/256 . " " . $post;
+		$log = $_SESSION['count'];
 		$f = fopen("firmware.log", "w");
 		fwrite($f, $log);
 		fclose($f);
@@ -278,6 +376,7 @@ class DispenserProcessorFirmware
     public function processPackage($header, $data)
     {
         if(true){
+			$header = $_SESSION['rawHeader'];
             $deviceUid = substr($header, 0, 6);
             $packetType = pack("C*", 4, 0);
 
@@ -296,6 +395,7 @@ class DispenserProcessorFirmware
             }
             $checksum = strrev(implode("", $checksumParts));
             $header = $deviceUid . $packetType . $checksum;
+
 
             $this->updateFirmware($header);
         }else{
@@ -346,12 +446,12 @@ class DispenserProcessorFirmware
 
         for($i=0;$i<count($logs);$i++)
         {
-            if($crcForPacket[$i] == '245a4225') //245a4225 is crc32 for empty packet like ff ff ff
+			/*if($crcForPacket[$i] == '245a4225') //245a4225 is crc32 for empty packet like ff ff ff
             {
 //				header("HTTP/1.1 400 The empty packet");
             }elseif(count($logs[$i]) < self::PACKET){
 				//header("HTTP/1.1 400 Wrong size of packet");
-        }else {
+        }else {*/
                 $leastCrc = implode("", array_reverse(array_slice($logs[$i], 14, self::LEASTCRC)));
 
 //                if($leastCrc == substr($crcForPacket[$i], -4))
@@ -374,7 +474,7 @@ class DispenserProcessorFirmware
 //                }else{
 ////                    header("HTTP/1.1 400 Wrong crc for packet");
 //                }
-            }
+				//}
         }
 		//var_dump($config);
         return $config;

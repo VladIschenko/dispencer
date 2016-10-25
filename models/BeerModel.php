@@ -145,6 +145,14 @@ class BeerModel
         $id = $stmt->fetchColumn();
         return $id;
     }
+
+    public function findBySearchPhrase($search)
+    {
+        $stmt = $this->db->query("SELECT * FROM beers WHERE concat(name,description) LIKE '%$search%'");
+        $stmt->execute();
+        $beerList = $stmt->fetchAll();
+        return $beerList;
+    }
 }
 
 

@@ -155,7 +155,7 @@ class DeviceModel {
     public function findCustomerByDeviceId($deviceId)
     {
         $stmt= $this->db->query("SELECT login FROM users WHERE users.id = (SELECT customer_id FROM devices WHERE device_id = '$deviceId');");
-        $login= $stmt->fetchAll();
+        $login= $stmt->fetchColumn();
         return $login;
     }
 
@@ -181,6 +181,8 @@ class DeviceModel {
     {
         $stmt= $this->db->query("SELECT * FROM devices WHERE installation_date IS NOT NULL");
         $installedDevices = $stmt->fetchAll();
+        $installedDevices[0]['title'] = "Установленные";
+
         for ($i=0;$i<sizeof($installedDevices); $i++)
         {
             $installedDevices[$i]['login'] = $this->findCustomerByDeviceId($installedDevices[$i]['device_id']);
@@ -188,13 +190,32 @@ class DeviceModel {
         return $installedDevices;
     }
 
+    public function findAllDevices()
+    {
+        $stmt= $this->db->query("SELECT * FROM devices");
+        $allDevices = $stmt->fetchAll();
+        $allDevices[0]['title'] = "Полный список";
+        for ($i=0;$i<sizeof($allDevices); $i++)
+        {
+            $customer = $this->findCustomerByDeviceId($allDevices[$i]['device_id']);
+
+            if($customer)
+            {
+                $allDevices[$i]['login'] = $customer;
+            }else{
+                $allDevices[$i]['login'] = "";
+            }
+        }
+        return $allDevices;
+    }
+
     public function findBySearchPhrase($search)
     {
         $stmt = $this->db->query("SELECT * FROM devices WHERE concat(device_id,customer_id,organisation,installation_date,
-installation_address, gps, inventory number, installer_name) LIKE '%$search%'");
+installation_address, inventory_number, installer_name) LIKE '%$search%'");
         $stmt->execute();
-        $userList = $stmt->fetchAll();
-        return $userList;
+        $deviceList = $stmt->fetchAll();
+        return $deviceList;
     }
 
     public function findDevicesByOrganisation($organisation)
@@ -256,13 +277,22 @@ installation_address, gps, inventory number, installer_name) LIKE '%$search%'");
     }
 
 
-    public function checkAddressById($id)
+    public function getAddressById($id)
     {
         $stmt = $this->db->prepare("SELECT installation_address FROM devices WHERE device_id = :id;");
         $stmt->bindParam(':id', $id);
         $stmt->execute();
         $address= $stmt->fetchColumn();
         return $address;
+    }
+
+    public function getOrganisationById($id)
+    {
+        $stmt = $this->db->prepare("SELECT organisation FROM devices WHERE device_id = :id;");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $organisation= $stmt->fetchColumn();
+        return $organisation;
     }
 
     public function checkLastSanitizationTime($id)
@@ -344,6 +374,7 @@ installation_address, gps, inventory number, installer_name) LIKE '%$search%'");
 
     public function getSortByIdAndChannel($deviceId, $channel)
     {
+        $beerId = 'default';
         $stmt = $this->db->prepare("SELECT id FROM devices WHERE device_id = '$deviceId'");
         $stmt->execute();
         $id = $stmt->fetchColumn();

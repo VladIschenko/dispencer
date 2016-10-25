@@ -5,6 +5,8 @@ error_reporting(E_ALL);
 
 define("IN_PARSER_MODE", "true");
 
+ini_set('display_errors', 0);
+
 session_start();
 
 
@@ -14,6 +16,7 @@ require 'core/Db.php';
 require 'models/DeviceModel.php';
 require 'models/UserModel.php';
 require 'models/LogsModel.php';
+require 'models/OptionsModel.php';
 require "smsGateway/smsc_api.php";
 require "helpers/DeviceHelper.php";
 

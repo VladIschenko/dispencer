@@ -8,14 +8,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beerbook</title>
 
-<!--    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">-->
-<!--    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>-->
-<!--    <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>-->
-<!--    <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>-->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
 
     <script src="../../public/js/jquery-3.1.0.js"></script>
-    <link href="../../public/css/datepicker.min.css" rel="stylesheet" type="text/css">
-    <script src="../../public/js/datepicker.min.js"></script>
     <script src="../../public/js/amcharts.js"></script>
     <script src="../../public/js/serial.js"></script>
     <script src="../../public/js/dataloader.min.js" type="text/javascript"></script>
@@ -28,7 +26,10 @@
     <link href="../../assets/css/style.css" rel="stylesheet" />
     <link href="../../assets/css/main-style.css" rel="stylesheet" />
 
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.min.css" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker3.min.css" />
 
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.min.js"></script>
 
 </head>
 <body>
@@ -265,7 +266,10 @@
                             <img src="../../assets/img/user.jpg" alt="">
                         </div>
                         <div class="user-info">
-                            <div><strong><?php echo $_SESSION['login']?></strong></div>
+                            <div><strong>
+                                    <a href="/user/<?php echo $_SESSION['id'] ?>">
+                                        <?php echo $_SESSION['login']?></a>
+                                </strong></div>
                             <div class="user-text-online">
                                 <span class="user-circle-online btn btn-success btn-circle "></span>&nbsp;Онлайн
                             </div>
@@ -285,55 +289,35 @@
                     </div>
                     <!--end search section-->
                 </li>
-                <li class="">
-                    <a href="/user/<?php echo $_SESSION['id'] ?>"><i class="fa fa-dashboard fa-fw"></i>Мой профиль</a>
-                </li>
                 <?php if(isset($_SESSION['type']) and $_SESSION['type'] == 'god') {?>
-                <li>
-                    <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i>Статистика<span class="fa arrow"></span></a>
-                    <ul class="nav nav-second-level">
-                        <li>
-                            <a href="/stats">Общая</a>
-                        </li>
-                        <li>
-                            <a href="flot.html">По сортам</a>
-                        </li>
-                        <li>
-                            <a href="morris.html">По колоннам</a>
-                        </li>
-                    </ul>
-                    <!-- second-level-items -->
-                </li>
                     <li>
-                        <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i>Панели управления<span class="fa arrow"></span></a>
-                        <ul class="nav nav-second-level">
-                            <li>
-                                <a href="/control/userlist">Пользователями</a>
-                            </li>
-                            <li>
-                                <a href="/control/devices">Устройствами</a>
-                            </li>
-                            <li>
-                                <a href="/control/options">Настройками</a>
-                            </li>
-                            <li>
-                                <a href="/control/logs">Логами</a>
-                            </li>
-                            <li>
-                                <a href="/beerlist">Сортами пива</a>
-                            </li>
-                        </ul>
-                        <!-- second-level-items -->
-                    </li>
-                <li>
-                    <a href="/add-user"><i class="fa fa-plus" aria-hidden="true"></i>Добавить пользователя</a>
-                </li>
-                    <li>
-                        <a href="/control/devices/add"><i class="fa fa-plus" aria-hidden="true"></i>Добавить устройство</a>
+                        <a href="/statistics"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i>
+                            Общая статистика</a>
                     </li>
                     <li>
-                        <a href="/beer/add"><i class="fa fa-plus" aria-hidden="true"></i>Добавить новый сорт пива</a>
+                        <a href="/control/statistics"><i class="fa fa-usd" aria-hidden="true"></i>
+                            Статистика по продажам</a>
                     </li>
+                            <li>
+                                <a href="/control/userlist"><i class="fa fa-user" aria-hidden="true"></i>Пользователи</a>
+                            </li>
+                            <li>
+                                <a href="/control/devices"><i class="fa fa-tachometer" aria-hidden="true"></i>
+                                    Устройства</a>
+                            </li>
+<!--                            <li>-->
+<!--                                <a href="/control/options">Настройки</a>-->
+<!--                            </li>-->
+<!--                            <li>-->
+<!--                                <a href="/control/logs">Логи</a>-->
+<!--                            </li>-->
+                            <li>
+                                <a href="/beerlist"><i class="fa fa-beer" aria-hidden="true"></i>Сорта пива</a>
+                            </li>
+
+<!--                    <li>-->
+<!--                        <a href="/send"><i class="fa fa-plus" aria-hidden="true"></i>Отправить смс</a>-->
+<!--                    </li>-->
 
                 <?php }else{ ?>
 
@@ -341,7 +325,7 @@
                     <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i>Панели управления<span class="fa arrow"></span></a>
                     <ul class="nav nav-second-level">
                         <li>
-                            <a href="/control/userlist">Пользователями</a>
+                            <a href="/userlist">Пользователями</a>
                         </li>
                         <li>
                             <a href="/control/devices">Устройствами</a>
@@ -352,19 +336,10 @@
                     </ul>
                     <!-- second-level-items -->
                 </li>
-                <li>
-                    <a href="/add-user"><i class="fa fa-plus" aria-hidden="true"></i>Добавить пользователя</a>
-                </li>
-                <li>
-                    <a href="/control/devices/add"><i class="fa fa-plus" aria-hidden="true"></i>Добавить устройство</a>
-                </li>
-                <li>
-                    <a href="/beer/add"><i class="fa fa-plus" aria-hidden="true"></i>Добавить новый сорт пива</a>
-                </li>
 
-                <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i>Выйти</a></li>
                 <?php } ?>
 
+                <li><a href="/logout"><i class="fa fa-sign-out fa-fw"></i>Выйти</a></li>
             </ul>
             <!-- end side-menu -->
         </div>

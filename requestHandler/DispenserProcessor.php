@@ -7,6 +7,7 @@ use Exception;
 use Core\Db;
 use Models\DeviceHelper;
 use Models\DeviceModel;
+use Models\OptionsModel;
 use Models\UserModel;
 use Models\LogsModel;
 use PDO;
@@ -23,7 +24,7 @@ class DispenserProcessor
 
     protected $db;
     //header of data
-    const HEADER_SIZE = 8;
+    const HEADER_SIZE = 10;
 
     const DEVICE_UID = 6;
     const PACKET_TYPE = 2;
@@ -60,12 +61,12 @@ class DispenserProcessor
 
     public function processData()
     {
-        $contents = $this->getInput();
+        //$contents = $this->getInput();
 //        echo $contents;
-		/*$filename = "input (7).bin";
+		$filename = "input (7).bin";
         $handle = fopen($filename, "rb");
         $contents = fread($handle, filesize($filename));
-        fclose($handle);*/
+        fclose($handle);
 //        echo "\n" . "CONTENT: " . $contents . "\n";
 //        echo "</br>";
         $data = unpack("C*", $contents);
@@ -103,7 +104,13 @@ class DispenserProcessor
 //            return;
 //        }
 
+        if(!isset($_SESSION)){
+            session_start();
+        }
+
         $header = substr($contents, 0, self::HEADER_SIZE);
+        $_SESSION['rawHeader'] = $header;
+
         $data = substr($contents, self::HEADER_SIZE + self::CRC32);
         $this->processPackage($header,$data);
     }
@@ -162,7 +169,7 @@ class DispenserProcessor
         $flowFactor2 = hexdec(implode("", array_reverse(array_slice($setting, 35, 2))));
         $flowFactor3 = hexdec(implode("", array_reverse(array_slice($setting, 37, 2))));
         $flowFactor4 = hexdec(implode("", array_reverse(array_slice($setting, 39, 2))));
-        $minInerval = hexdec(implode("", array_reverse(array_slice($setting, 41, 2))));
+        $minInterval = hexdec(implode("", array_reverse(array_slice($setting, 41, 2))));
         $maxInterval = hexdec(implode("", array_reverse(array_slice($setting, 43, 2))));
         $time = hexdec(implode("", array_reverse(array_slice($setting, 45, 4))));
         $time = date('Y-m-d h:i:s', $time);
@@ -190,12 +197,12 @@ class DispenserProcessor
             'flowmeter_performance_2' => $flowFactor2,
             'flowmeter_performance_3' => $flowFactor3,
             'flowmeter_performance_4' => $flowFactor4,
-            'sanitization_min_interval' => $minInerval,
+            'sanitization_min_interval' => $minInterval,
             'sanitization_max_interval' => $maxInterval,
             'time' => $time,
         );
 
-		var_dump($setting);
+		//var_dump($setting);
 
         return $setting;
     }
@@ -312,10 +319,89 @@ class DispenserProcessor
             {
                 $data = $this->processSetting($data);
                 $this->saveSetting($header, $data);
+            }elseif($header['packet_type'] == 6 || $header['packet_type'] == 7)
+            {
+                $data = $this->processDiagnosticLogs($header, $data);
             }
 
             $device->changeFirmwareStatusToNotRequired($deviceUidForChecking);
         }
+    }
+
+    public function processDiagnosticLogs($header, $data)
+    {
+        $data = $this->addZero(unpack("C*", $data));
+
+        $ipAddress = array();
+        $taskStackTop = array();
+        $faultRegisters = array();
+
+        $leaseTime = hexdec(implode("", array_reverse(array_slice($data, 0, 4))));
+
+        for($i=0;$i<4;$i++)
+        {
+            $ipAddress[$i] = hexdec(implode("", array_reverse(array_slice($data, 4+$i, 1))));
+        }
+
+        $retransmissionCount = hexdec(implode("", array_reverse(array_slice($data, 8, 4))));
+        $ethRebootCount = hexdec(implode("", array_reverse(array_slice($data, 12, 2))));
+
+        for($i=0;$i<7;$i++)
+        {
+            $taskStackTop[$i] = hexdec(implode("", array_reverse(array_slice($data, 14+2*$i, 2))));
+        }
+
+        $uptime = hexdec(implode("", array_reverse(array_slice($data, 28, 4))));
+
+        for($i=0;$i<14;$i++)
+        {
+            $faultRegisters[$i] = hexdec(implode("", array_reverse(array_slice($data, 32+4*$i, 4))));
+        }
+
+        $cpuLoad = hexdec(implode("", array_reverse(array_slice($data, 88, 1))));
+        $unixtime = hexdec(implode("", array_reverse(array_slice($data, 89, 4))));
+        $unixtime = date('Y-m-d h:i:s', $unixtime);
+
+        $diagnosticLog = array(
+            'lease_time' => $leaseTime,
+            'ip_addr' => $ipAddress[3] . "." . $ipAddress[2] . "." . $ipAddress[1] . "." . $ipAddress[0] . ".",
+            'retransmission_cnt' => $retransmissionCount,
+            'eth_reboot_cnt' => $ethRebootCount,
+            'task_stack_top_1' => $taskStackTop[0],
+            'task_stack_top_2' => $taskStackTop[1],
+            'task_stack_top_3' => $taskStackTop[2],
+            'task_stack_top_4' => $taskStackTop[3],
+            'task_stack_top_5' => $taskStackTop[4],
+            'task_stack_top_6' => $taskStackTop[5],
+            'task_stack_top_7' => $taskStackTop[6],
+            'uptime' => $uptime,
+            'fault_registers_1' => $faultRegisters[0],
+            'fault_registers_2' => $faultRegisters[1],
+            'fault_registers_3' => $faultRegisters[2],
+            'fault_registers_4' => $faultRegisters[3],
+            'fault_registers_5' => $faultRegisters[4],
+            'fault_registers_6' => $faultRegisters[5],
+            'fault_registers_7' => $faultRegisters[6],
+            'fault_registers_8' => $faultRegisters[7],
+            'fault_registers_9' => $faultRegisters[8],
+            'fault_registers_10' => $faultRegisters[9],
+            'fault_registers_11' => $faultRegisters[10],
+            'fault_registers_12' => $faultRegisters[11],
+            'fault_registers_13' => $faultRegisters[12],
+            'fault_registers_14' => $faultRegisters[13],
+            'cpu_load' => $cpuLoad,
+            'time' => $unixtime
+        );
+
+        $diagnosticLog = array_merge($header, $diagnosticLog);
+
+        $jsonDiagnosticLog = json_encode($diagnosticLog);
+
+        fopen('diagnostic.log', 'r');
+        $file = file_get_contents('diagnostic.log');
+        file_put_contents("diagnostic.log", $file . $jsonDiagnosticLog . "      " . "\n");
+
+        return $jsonDiagnosticLog;
     }
 
     public function processLogs($data)
@@ -376,10 +462,12 @@ class DispenserProcessor
         $user = new UserModel();
         $device = new DeviceModel();
         $logsModel = new LogsModel();
-        $phone = $user->getPhoneByDeviceId($header['device_uid']);
+        //$phone = $user->getPhoneByDeviceId($header['device_uid']);
         $sms = $device->checkSmsNotificationsByUid($header['device_uid']);
-        $address = $device->checkAddressById($header['device_uid']);
-        for($i=0;$i<count($logs)-1;$i++)
+        $address = $device->getAddressById($header['device_uid']);
+        $organisation = $device->getOrganisationById($header['device_uid']);
+        $phones = $user->getAllPhonesFromOrganisation($organisation);
+        for($i=0;$i<count($logs);$i++)
         {
 
 //            $msg .=  $this->processEventTypeToText($logs[$i]['event_type']) . " ";
@@ -390,8 +478,8 @@ class DispenserProcessor
             $stmt = $this->db->prepare("INSERT INTO logs(type, channel,
  volume, time, device_id, event_uid)
  values (?,?,?,?,?,?)");
-            if(!$logsModel->findLogsByEventUid($logs[$i]['event_uid']))
-            {
+            //if(!$logsModel->findLogsByEventUid($logs[$i]['event_uid']))
+            //{
             $result = $stmt->execute(
                 array(
                     $logs[$i]['event_type'],
@@ -401,35 +489,40 @@ class DispenserProcessor
                     $header['device_uid'],
                     $logs[$i]['event_uid'])
             );
-        }
+        //}
 
             $sort = $device->getSortByIdAndChannel($header['device_uid'], $logs[$i]['channel']);
-            if($sms == 1 && $logs[$i]['event_type'] == 'EV_SANIT_STAGE3_COMPLETE')
+
+            for($y=0; $y<count($phones); $y++)
             {
-                $msg = "Санитация проведена успешно. " . $address . ". " . $sort;
-                $sender =  ".";
-                list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
-            }elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_FLUSHING_COMPLETE'){
-                $msg = "Промывка проведена успешно. " . $address . ". " . $sort;
-                $sender =  ".";
-                list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
-            }elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_FLOW_LOW'){
-                $msg = "Недостаточная мощность потока. " . $address . ". " . $sort;
-                $sender =  ".";
-                list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
-            }/*elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_CONCENTR_LEVEL_LO'){
-                $msg = "Недостаточный уровень концентрата. " . $address . ". " . $sort;
+                $phone = $phones[$y]['phone'];
+
+                if ($sms == 1 && $logs[$i]['event_type'] == 'EV_SANIT_STAGE3_COMPLETE') {
+                    $msg = $organisation . ": " . $address . ". " . "Санитация проведена успешно. "  . $sort;
+                    $sender = ".";
+                    list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
+                } elseif ($sms == 1 && $logs[$i]['event_type'] == 'EV_FLUSHING_COMPLETE') {
+                    $msg = $organisation . ": " . $address . ". " . "Промывка проведена успешно. " . $sort;
+                    $sender = ".";
+                    list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
+                } elseif ($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_FLOW_LOW') {
+                    $msg = $organisation . ": " . $address . ". " .  "Недостаточная мощность потока. " .  $sort;
+                    $sender = ".";
+                    list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
+                }/*elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_CONCENTR_LEVEL_LO'){
+                $msg =$organisation . ": " . $address . ". " .  "Недостаточный уровень концентрата. " .  $sort;
                 list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 1);
             }elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_CLEANSER_LEVEL_LO'){
-                $msg = "Недостаточный уровень моющего средства. " . $address . "." . $sort;
+                $msg = $organisation . ": " . $address . "." .  "Недостаточный уровень моющего средства. " .  $sort;
                 list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 1);
-            }*/elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_WATER_LEVEL_LO'){
-                $msg = "Недостаточный уровень воды. " . $address . ". " . $sort;
-                list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 1);
-            }elseif($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_WATER_NO_DATA'){
-                $msg = "Нет данных от датчика уровня воды. " . $address . ". " . $sort;
-                $sender =  ".";
-                list($sms_id, $sms_cnt, $sender) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
+            }*/ elseif ($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_WATER_LEVEL_LO') {
+                    $msg = $organisation . ": " . $address . ". " .  "Недостаточный уровень воды. " . $sort;
+                    list($sms_id, $sms_cnt) = send_sms("$phone", "$msg", 1);
+                } elseif ($sms == 1 && $logs[$i]['event_type'] == 'EV_ERR_WATER_NO_DATA') {
+                    $msg = $organisation . ": " . $address . ". " .  "Нет данных от датчика уровня воды. " .  $sort;
+                    $sender = ".";
+                    list($sms_id, $sms_cnt, $sender) = send_sms("$phone", "$msg", 0, 0, 0, 0, $sender);
+                }
             }
         }
         header("HTTP/1.1 202 Good job");
@@ -439,17 +532,30 @@ class DispenserProcessor
     public function saveSetting($header, $setting)
     {
         $now = date("Y-m-d H:i:s");
+        $deviceUid = $header['device_uid'];
 
-        $stmt = $this->db->prepare("INSERT INTO options(device_id, hw_config,
+        $options = new OptionsModel();
+        if($options->checkExistence($deviceUid))
+        {
+            $stmt = $this->db->prepare("UPDATE options SET hw_config = ?,
+ sensor_1 = ?, sensor_2 = ?, start_volume_1 = ?, start_volume_2 = ?, start_volume_3 = ?, end_volume_1 = ?,
+ end_volume_2 = ?, end_volume_3 = ?, cleanser_volume_1 = ?, cleanser_volume_2 = ?, cleanser_volume_3 = ?,
+ cleanser_delay_1 = ?, cleanser_delay_2 = ?, cleanser_delay_3 = ?, concentrate_volume = ?, water_mix_volume = ?,
+ flow_speed_min = ?, 	flowmeter_performance_1 = ?, 	flowmeter_performance_2 = ?, 	flowmeter_performance_3 = ?,
+ flowmeter_performance_4 = ?, sanitization_min_interval = ?, sanitization_max_interval = ?, time = ?, last_dispatch = ?
+ WHERE device_id = ?");
+        }else {
+            $stmt = $this->db->prepare("INSERT INTO options(hw_config,
  sensor_1, sensor_2, start_volume_1, start_volume_2, start_volume_3, end_volume_1,
  end_volume_2, end_volume_3, cleanser_volume_1, cleanser_volume_2, cleanser_volume_3,
  cleanser_delay_1, cleanser_delay_2, cleanser_delay_3, concentrate_volume, water_mix_volume,
  flow_speed_min, 	flowmeter_performance_1, 	flowmeter_performance_2, 	flowmeter_performance_3,
- flowmeter_performance_4, sanitization_min_interval, sanitization_max_interval, time, created_at)
- values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+ flowmeter_performance_4, sanitization_min_interval, sanitization_max_interval, time, last_dispatch, device_id)
+ values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+        }
+
         $result = $stmt->execute(
             array(
-                $header['device_uid'],
                 $setting['hw_config'],
                 $setting['sensor_1'],
                 $setting['sensor_2'],
@@ -475,9 +581,11 @@ class DispenserProcessor
                 $setting['sanitization_min_interval'],
                 $setting['sanitization_max_interval'],
                 $setting['time'],
-                $now)
+                $now,
+                $header['device_uid'])
         );
-//        var_dump($result);
+
+        //var_dump($result);
         header("HTTP/1.1 202 Good job");
     }
     //END FOR SAVING DATA

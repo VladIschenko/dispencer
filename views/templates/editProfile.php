@@ -38,6 +38,10 @@
                                 <input name="description" type="text" class="form-control" value="<?php echo $data['description'];?>"/>
                             </div>
                             <div class="form-group">
+                                <label>Организация</label>
+                                <input name="organisation" type="text" class="form-control" value="<?php echo $data['organisation'];?>"/>
+                            </div>
+                            <div class="form-group">
                                 <label>Телефон</label>
                                 <input name="phone" type="text" class="form-control" value="<?php echo $data['phone'];?>"/>
                             </div>

@@ -10,6 +10,8 @@
 <script src="../../assets/plugins/metisMenu/jquery.metisMenu.js"></script>
 <script src="../../assets/plugins/pace/pace.js"></script>
 <script src="../../assets/scripts/siminta.js"></script>
+<script src="../../assets/scripts/dashboard-demo.js"></script>
+
 
 </body>
 

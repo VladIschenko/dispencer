@@ -12,6 +12,7 @@ use Core\View;
 use Models\BeerModel;
 use Models\DeviceModel;
 use Models\MainModel;
+use Models\UserModel;
 
 class DeviceController
 {
@@ -67,40 +68,123 @@ class DeviceController
         }
     }
 
+    public static function findAllDevices()
+    {
+        if(isset($_SESSION['login'])){
+            $device = new DeviceModel();
+            $allDevices = $device->findAllDevices();
+            echo View::render('devicePanel/installedDevices', $allDevices);
+        }else{
+            echo View::render('errors/unauthorized');
+        }
+    }
+
+    public static function findInstalledDevices()
+    {
+        if(isset($_SESSION['login'])){
+            $device = new DeviceModel();
+            $installedDevices = $device->findInstalledDevices();
+            echo View::render('devicePanel/installedDevices', $installedDevices);
+        }else{
+            echo View::render('errors/unauthorized');
+        }
+    }
+
+    public static function findSoldDevices()
+    {
+        if(isset($_SESSION['login'])){
+            $device = new DeviceModel();
+            $soldDevices = $device->findSoldDevices();
+            echo View::render('devicePanel/soldDevices', $soldDevices);
+        }else{
+            echo View::render('errors/unauthorized');
+        }
+    }
+
+    public static function findFreeDevices()
+    {
+        if(isset($_SESSION['login'])){
+            $device = new DeviceModel();
+            $freeDevices = $device->findFreeDevices();
+            echo View::render('devicePanel/freeDevices', $freeDevices);
+        }else{
+            echo View::render('errors/unauthorized');
+        }
+    }
+
     public static  function showFullDevicelist()
     {
-        $device = new DeviceModel();
-        $helper = new MainModel();
+        if(isset($_SESSION['login'])){
+            $device = new DeviceModel();
+            $helper = new MainModel();
 
-        $organisationsList = $helper->findAllOrganisations();
-        echo View::insert('layouts/header');
-        echo View::insert('templates/devicePanel', $organisationsList);
-        if (isset($_POST['device-organisation'])){
-            $organisation = $_POST['device-organisation'];
-            $devices = $device->findDevicesByOrganisation($organisation);
-            echo View::insert('templates/devicePanel/soldDevices', $devices);
+            if($_SESSION['type'] == 'god'){
+                $organisationsList = $helper->findAllOrganisations();
+                echo View::insert('layouts/header');
+                echo View::insert('templates/devicePanel', $organisationsList);
+                if (isset($_POST['device-organisation'])){
+                    $organisation = $_POST['device-organisation'];
+                    $devices = $device->findDevicesByOrganisation($organisation);
+                    echo View::insert('templates/devicePanel/soldDevices', $devices);
+                }
+                if(!isset($_POST['device-type']) and !isset($_POST['device-organisation'])){
+                    $installedDevices = $device->findInstalledDevices();
+                    echo View::insert('templates/devicePanel/installedDevices', $installedDevices);
+                }elseif(isset($_POST['device-type']) and $_POST['device-type'] == 'Свободные'){
+                    $freeDevices = $device->findFreeDevices();
+                    echo View::insert('templates/devicePanel/freeDevices', $freeDevices);
+                }elseif(isset($_POST['device-type']) and $_POST['device-type'] == 'Проданные'){
+                    $soldDevices = $device->findSoldDevices();
+                    echo View::insert('templates/devicePanel/soldDevices', $soldDevices);
+                }elseif(isset($_POST['device-type']) and $_POST['device-type'] == 'Установленные'){
+                    $installedDevices = $device->findInstalledDevices();
+                    echo View::insert('templates/devicePanel/installedDevices', $installedDevices);
+                }
+                echo View::insert('layouts/footer');
+            }else{
+                echo View::insert('layouts/header');
+                $user = new UserModel();
+                $organisation = $user->getOrganisationById($_SESSION['id']);
+                $devices = $device->findDevicesByOrganisation($organisation);
+                echo View::insert('templates/devicePanel/installedDevices', $devices);
+                echo View::insert('layouts/footer');
+            }
+
+        }else{
+            echo "Доступ запрещен, необходима авторизация!";
         }
-        if(!isset($_POST['device-type']) and !isset($_POST['device-organisation'])){
-            $installedDevices = $device->findInstalledDevices();
-            echo View::insert('templates/devicePanel/installedDevices', $installedDevices);
-        }elseif(isset($_POST['device-type']) and $_POST['device-type'] == 'Свободные'){
-            $freeDevices = $device->findFreeDevices();
-            echo View::insert('templates/devicePanel/freeDevices', $freeDevices);
-        }elseif(isset($_POST['device-type']) and $_POST['device-type'] == 'Проданные'){
-            $soldDevices = $device->findSoldDevices();
-            echo View::insert('templates/devicePanel/soldDevices', $soldDevices);
-        }elseif(isset($_POST['device-type']) and $_POST['device-type'] == 'Установленные'){
-            $installedDevices = $device->findInstalledDevices();
-            echo View::insert('templates/devicePanel/installedDevices', $installedDevices);
+
+    }
+
+    public static function ViewDevicelistBySearchPhrase()
+    {
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            //TODO только для демонстрации, потом убрать
+            ini_set('display_errors', 0);
+            //****************
+            $device = new DeviceModel();
+            $search = $_POST['search'];
+            $devicelist = $device->findBySearchPhrase($search);
+            $devicelist[0]['title'] = 'Результат';
+            echo View::render('devicePanel/installedDevices', $devicelist);
         }
-        echo View::insert('layouts/footer');
     }
 
     public static function showFreeDevices()
     {
-        $device = new DeviceModel();
-        $devices = $device->findFreeDevices();
-        echo View::render('devicePanel', $devices);
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $device = new DeviceModel();
+            $devices = $device->findFreeDevices();
+            echo View::render('devicePanel', $devices);
+        }
     }
 
 
@@ -139,24 +223,35 @@ class DeviceController
 
     public static function updateFirmware($id)
     {
-        $device = new DeviceModel();
-        $device->changeFirmwareStatusToStanby($id);
-        header('Location: /control/devices');
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $device = new DeviceModel();
+            $device->changeFirmwareStatusToStanby($id);
+            header('Location: /control/devices');
+        }
 
     }
 
     public static function changeSmsNotification($id)
     {
-        $device = new DeviceModel();
-        $status = $device->checkSmsNotifications($id);
-        if($status == 1)
+        if(!isset($_SESSION['login']))
         {
-            $device->changeSmsNotificationsToNotNeeded($id);
-            header("Location: /control/devices/$id");
-        }elseif($status == 0){
-            $device->changeSmsNotificationsToNeeded($id);
-            header("Location: /control/devices/$id");
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $device = new DeviceModel();
+            $status = $device->checkSmsNotifications($id);
+            if ($status == 1) {
+                $device->changeSmsNotificationsToNotNeeded($id);
+                header("Location: /control/devices/$id");
+            } elseif ($status == 0) {
+                $device->changeSmsNotificationsToNeeded($id);
+                header("Location: /control/devices/$id");
 
+            }
         }
     }
 
@@ -172,59 +267,81 @@ class DeviceController
 
     public static function saveDevice()
     {
-        $device = new DeviceModel();
-        if ($device->deviceExists($_POST['device_id'])) {
-            echo "device exist";
-        }else{
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $device = new DeviceModel();
+            if ($device->deviceExists($_POST['device_id'])) {
+                echo "device exist";
+            } else {
                 $device->setDeviceId($_POST['device_id']);
-            if(empty($_POST['organisation'])){
-                $device->setOrganisation(NULL);
-            }else{
-                $device->setOrganisation($_POST['organisation']);
-            }
-            if(empty($_POST['installation_date'])){
-                $device->setOrganisation(NULL);
-            }else{
-                $device->setInstallationDate($_POST['installation_date']);
-            }
-            if(empty($_POST['installation_address'])){
-                $device->setOrganisation(NULL);
-            }else{
-                $device->setInstallationAddres($_POST['installation_address']);
-            }
-            if(empty($_POST['inventory_number'])){
-                $device->setOrganisation(NULL);
-            }else{
-                $device->setInventoryNumber($_POST['inventory_number']);
-            }
-            if(empty($_POST['installer_name'])){
-                $device->setOrganisation(NULL);
-            }else{
-                $device->setInstallerName($_POST['installer_name']);
-            }
+                if (empty($_POST['organisation'])) {
+                    $device->setOrganisation(NULL);
+                } else {
+                    $device->setOrganisation($_POST['organisation']);
+                }
+                if (empty($_POST['installation_date'])) {
+                    $device->setOrganisation(NULL);
+                } else {
+                    $device->setInstallationDate($_POST['installation_date']);
+                }
+                if (empty($_POST['installation_address'])) {
+                    $device->setOrganisation(NULL);
+                } else {
+                    $device->setInstallationAddres($_POST['installation_address']);
+                }
+                if (empty($_POST['inventory_number'])) {
+                    $device->setOrganisation(NULL);
+                } else {
+                    $device->setInventoryNumber($_POST['inventory_number']);
+                }
+                if (empty($_POST['installer_name'])) {
+                    $device->setOrganisation(NULL);
+                } else {
+                    $device->setInstallerName($_POST['installer_name']);
+                }
                 $device->save();
+            }
         }
 //        header('Location: /control/devices');
     }
 
     public static function updateDevice($id)
     {
-        $device = new DeviceModel();
-        $device->setDeviceId($_POST['device-id']);
-        $device->setCustomerId($_POST['customer']);
-        $device->setOrganisation($_POST['organisation']);
-        $device->setInstallationDate($_POST['installation-date']);
-        $device->setInstallationAddres($_POST['installation-address']);
-        $device->setInventoryNumber($_POST['inventory-number']);
-        $device->setInstallerName($_POST['installer']);
+        if (!isset($_SESSION['login'])) {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $device = new DeviceModel();
+            $device->setDeviceId($_POST['device-id']);
+            $device->setCustomerId($_POST['customer']);
+            $device->setOrganisation($_POST['organisation']);
+            $device->setInstallationDate($_POST['installation-date']);
+            $device->setInstallationAddres($_POST['installation-address']);
+            $device->setInventoryNumber($_POST['inventory-number']);
+            $device->setInstallerName($_POST['installer']);
 //      $user->checkIsValidForRegister();
-        $device->update($id);
-        header('Location: /control/devices');
+            $device->update($id);
+            header('Location: /control/devices');
+        }
     }
 
     public static function saveConfiguration($id)
     {
         var_dump($_POST);
+    }
+
+
+    public static function sellDevice($deviceUid)
+    {
+        if (!isset($_SESSION['login'])) {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            echo View::render('sell');
+        }
     }
 
 }

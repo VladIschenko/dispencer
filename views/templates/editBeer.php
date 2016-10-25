@@ -25,12 +25,19 @@
                             <label>Примечание</label>
                             <input name="description" type="text" class="form-control" value="<?php echo $data['description'];?>" />
                         </div>
+
+                        <?php if($_SESSION['type'] == 'god') { ?>
+
                         <div class="form-group">
                             <label>Организация</label>
                             <input name="organisation" type="text" class="form-control" value="<?php echo $data['organisation'];?>" />
                         </div>
+
+                        <?php } ?>
+
+
                         <div class="form-group">
-                            <button class="btn btn-lg btn-primary btn-block" type="submit">Добавить</button>
+                            <button class="btn btn-lg btn-primary btn-block" type="submit">Редактировать</button>
                         </div>
                     </form>
                 </div>

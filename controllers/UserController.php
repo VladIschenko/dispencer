@@ -30,10 +30,16 @@ class UserController
 
     public static function checkUserType()
     {
-        $user = new UserModel();
-        $id = $user->getIdByLogin($_SESSION['login']);
-        $type = $user->checkUserType($id);
-        return $type;
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $id = $user->getIdByLogin($_SESSION['login']);
+            $type = $user->checkUserType($id);
+            return $type;
+        }
     }
 
     public static function saveUser()
@@ -65,7 +71,7 @@ class UserController
                 $user->save();
             }
         }
-        header('Location: /userlist');
+        header('Location: /control/userlist');
     }
 
     public static function deleteProfile($id)
@@ -75,24 +81,30 @@ class UserController
         }else{
             $user = new UserModel();
             $user->delete($id);
-            header('Location: /userlist');
+            header('Location: /control/userlist');
         }
     }
 
     public static function updateProfile($id)
     {
-        $user = new UserModel();
-        $user->setUsername($_POST['login']);
-        $user->setEmail($_POST['email']);
-        $user->setFirstName($_POST['firstname']);
-        $user->setLastname($_POST['lastname']);
-        $user->setDescription($_POST['description']);
-        $user->setPhone($_POST['phone']);
-        $user->setMeasurement($_POST['measurement']);
-        $user->setLanguage($_POST['lang']);
+        if (!isset($_SESSION['login'])) {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $user->setUsername($_POST['login']);
+            $user->setEmail($_POST['email']);
+            $user->setFirstName($_POST['firstname']);
+            $user->setLastname($_POST['lastname']);
+            $user->setDescription($_POST['description']);
+            $user->setOrganisation($_POST['organisation']);
+            $user->setPhone($_POST['phone']);
+            $user->setMeasurement($_POST['measurement']);
+            $user->setLanguage($_POST['lang']);
 //      $user->checkIsValidForRegister();
-        $user->update($id);
-        header('Location: /userlist');
+            $user->update($id);
+            header('Location: /control/userlist');
+        }
     }
 
     //For render pages
@@ -131,7 +143,8 @@ class UserController
             echo $view->render('errors/unauthorized');
         } else {
             $user = new UserModel();
-            $userlist = $user->findAll();
+            $organisation = $user->getOrganisationById($_SESSION['id']);
+            $userlist = $user->findByOrganisation($organisation);
             echo View::render('userList', $userlist);
         }
     }

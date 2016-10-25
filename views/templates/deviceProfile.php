@@ -117,7 +117,11 @@
         <!-- Advanced Tables -->
         <div class="panel panel-default zero-padding col-md-8 col-md-offset-2">
             <div class="panel-heading">
-                <p><a href="/control/devices" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-chevron-left"></span>К списку устройств</a></p>
+                <p>
+                    <a href="/control/devices" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-chevron-left"></span>К списку устройств</a>
+                    <a href="/control/options/<?php echo $data['device_id']; ?>" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-chevron-left"></span>Настройки</a>
+                    <a href="/control/logs/<?php echo $data['device_id']; ?>" class="btn btn-xs btn-default"><span class="glyphicon glyphicon-chevron-left"></span>События</a>
+                </p>
                 <h3><?php echo $data['device_id']; ?></h3>
             </div>
             <div class="panel-body">

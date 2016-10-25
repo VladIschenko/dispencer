@@ -27,8 +27,17 @@ return $routes = array(
     '/control/userlist/organisation' => 'GodController/ViewUserlistByOrganisation',
     '/control/userlist/search' => 'GodController/ViewUserlistBySearchPhrase',
 
+    '/userlist/type/god' => 'GodController/ViewGodUserlist',
+    '/userlist/type/superadmin' => 'GodController/ViewSuperadminUserlist',
+    '/userlist/type/admin' => 'GodController/ViewAdminUserlist',
+    '/userlist/type/technician' => 'GodController/ViewTechnicianUserlist',
+    '/userlist/type/superuser' => 'GodController/ViewSuperuserUserlist',
+    '/userlist/type/user' => 'GodController/ViewUserUserlist',
+
+
+
     //Routes for Devices
-    '/control/devices' => 'DeviceController/showFullDevicelist',
+    '/control/devices' => 'DeviceController/findAllDevices',
     '/control/devices/:num' => 'DeviceController/deviceProfileView/$1',
     '/control/devices/firmware/:any'  => 'DeviceController/updateFirmware/$1',
     '/control/devices/sms/:num'  => 'DeviceController/changeSmsNotification/$1',
@@ -37,6 +46,17 @@ return $routes = array(
     '/devices/edit/:num'  => 'DeviceController/editDevice/$1',
     '/devices/save/:num'  => 'DeviceController/updateDevice/$1',
     '/conf-devices/save/:num'  => 'ChannelController/addSortsOnChannel/$1',
+    '/control/device/search' => 'DeviceController/ViewDevicelistBySearchPhrase',
+
+
+    '/devices/free'  => 'DeviceController/findFreeDevices',
+    '/devices/sold'  => 'DeviceController/findSoldDevices',
+    '/devices/installed'  => 'DeviceController/findInstalledDevices',
+
+
+    '/sell/:any'  => 'DeviceController/sellDevice/$1',
+
+
 
 
     //Routes for Logs
@@ -45,9 +65,12 @@ return $routes = array(
 
     //Routes for Options
     '/control/options' => 'OptionsController/ViewFullOptionslist',
+    '/control/options/:any' => 'OptionsController/ViewFullOptionsForDevice/$1',
+    '/options/edit/:any' => 'OptionsController/editOptions/$1',
+    '/options/update/:any' => 'OptionsController/saveOptions/$1',
 
     //Routes for Stats
-    '/control/stats' => 'GodController/ViewStatsForGod',
+
 
     //Routes for beer
     '/beerlist' => 'BeerController/showBeerlist',
@@ -58,6 +81,12 @@ return $routes = array(
     '/beer/delete/:num' => 'BeerController/deleteBeer/$1',
 
     //Routes for channels
-    '' => ''
+    '' => '',
+
+    '/test' => 'MainController/sendSms',
+    '/send' => 'MainController/sendPage',
+    '/statistics' => 'MainController/statistic',
+    '/control/statistics' => 'MainController/adminStatistic'
+
 
 );

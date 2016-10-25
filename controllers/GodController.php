@@ -52,40 +52,109 @@ class GodController
         echo View::render('userList', $userlist);
     }
 
+    public static function ViewGodUserlist()
+    {
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $userlist = $user->findAllGodType();
+            echo View::render('userList', $userlist);
+        }
+    }
+
+    public static function ViewSuperAdminUserlist()
+    {
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $userlist = $user->findAllSuperadminType();
+            echo View::render('userList', $userlist);
+        }
+    }
+
+    public static function ViewAdminUserlist()
+    {
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $userlist = $user->findAllAdminType();
+            echo View::render('userList', $userlist);
+        }
+    }
+
+    public static function ViewTechnicianUserlist()
+    {
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $userlist = $user->findAllTechnicianType();
+            echo View::render('userList', $userlist);
+        }
+    }
+
+    public static function ViewSuperuserUserlist()
+    {
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $userlist = $user->findAllSuperuserType();
+            echo View::render('userList', $userlist);
+        }
+    }
+
+    public static function ViewuserUserlist()
+    {
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $userlist = $user->findAllUserType();
+            echo View::render('userList', $userlist);
+        }
+    }
+
     public static function ViewUserlistByOrganisation()
     {
-        $user = new UserModel();
-        $organisation = $_POST['organisation'];
-        $userlist = $user->findByOrganisation($organisation);
-        echo View::render('userList', $userlist);
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $organisation = $_POST['organisation'];
+            $userlist = $user->findByOrganisation($organisation);
+            echo View::render('userList', $userlist);
+        }
     }
 
     public static function ViewUserlistBySearchPhrase()
     {
-        $user = new UserModel();
-        $search = $_POST['search'];
-        $userlist = $user->findBySearchPhrase($search);
-        echo View::render('userList', $userlist);
-    }
-
-
-    public static  function ViewFullDevicelist()
-    {
-
-    }
-
-    public static  function ViewFullLoglist()
-    {
-
-    }
-
-    public static  function ViewFullOptionslist()
-    {
-
-    }
-
-    public static  function ViewStatsForGod()
-    {
-
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $user = new UserModel();
+            $search = $_POST['search'];
+            $userlist = $user->findBySearchPhrase($search);
+            echo View::render('userList', $userlist);
+        }
     }
 }
