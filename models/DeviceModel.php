@@ -21,7 +21,9 @@ class DeviceModel {
     private $customerId;
     private $organisation;
     private $installationDate;
-    private $installationAddres;
+    private $installationCity;
+    private $installationStreet;
+    private $installationHouseNumber;
     private $gps;
     private $inventoryNumber;
     private $installerName;
@@ -68,14 +70,34 @@ class DeviceModel {
         $this->installationDate = $installationDate;
     }
 
-    public function getInstallationAddres()
+    public function getInstallationCity()
     {
-        return $this->installationAddres;
+        return $this->installationCity;
     }
 
-    public function setInstallationAddres($installationAddres)
+    public function setInstallationCity($installationCity)
     {
-        $this->installationAddres = $installationAddres;
+        $this->installationCity = $installationCity;
+    }
+
+    public function getInstallationStreet()
+    {
+        return $this->installationStreet;
+    }
+
+    public function setInstallationStreet($installationStreet)
+    {
+        $this->installationStreet = $installationStreet;
+    }
+
+    public function getInstallationHouseNumber()
+    {
+        return $this->installationHouseNumber;
+    }
+
+    public function setInstallationHouseNumber($installationHouseNumber)
+    {
+        $this->installationHouseNumber = $installationHouseNumber;
     }
 
     public function getGps()
@@ -279,10 +301,12 @@ installation_address, inventory_number, installer_name) LIKE '%$search%'");
 
     public function getAddressById($id)
     {
-        $stmt = $this->db->prepare("SELECT installation_address FROM devices WHERE device_id = :id;");
+        $stmt = $this->db->prepare("SELECT installation_city, installation_street, 
+installation_house_number FROM devices WHERE device_id = :id;");
         $stmt->bindParam(':id', $id);
         $stmt->execute();
-        $address= $stmt->fetchColumn();
+        $address = $stmt->fetch(PDO::FETCH_ASSOC);
+        $address = $address['installation_city'] . " " . $address['installation_street'] . " " . $address['installation_house_number'];
         return $address;
     }
 
@@ -343,23 +367,22 @@ installation_address, inventory_number, installer_name) LIKE '%$search%'");
     public function save()
     {
         $stmt = $this->db->prepare("INSERT INTO devices(device_id,
- organisation, installation_date, installation_address, inventory_number, 
+ organisation, installation_date, installation_city, installation_street, installation_house_number, inventory_number, 
  installer_name, firmware_status) 
- values (?,?,?,?,?,?,?)");
+ values (?,?,?,?,?,?,?,?,?)");
         $result = $stmt->execute(array($this->getDeviceId(), $this->getOrganisation(), $this->getInstallationDate(),
-            $this->getInstallationAddres(), $this->getInventoryNumber(), $this->getInstallerName(), '0'));
+            $this->getInstallationCity(), $this->getInstallationStreet(), $this->getInstallationHouseNumber(), $this->getInventoryNumber(), $this->getInstallerName(), '0'));
         return $this->db->lastInsertId();
     }
 
     public function update($id)
     {
         $stmt = $this->db->prepare('UPDATE devices SET device_id = ?, customer_id = ?, organisation = ?,
-  installation_date = ?, installation_address = ?, inventory_number = ?, installer_name = ?
+  installation_date = ?, installation_city = ?, installation_street = ?, installation_house_number = ?, inventory_number = ?, installer_name = ?
   WHERE id = ?');
         $result = $stmt->execute(array($this->getDeviceId(),$this->getCustomerId(),$this->getOrganisation(),
-            $this->getInstallationDate(),$this->getInstallationAddres(),
+            $this->getInstallationDate(),$this->getInstallationCity(), $this->getInstallationStreet(), $this->getInstallationHouseNumber(),
             $this->getInventoryNumber(),$this->getInstallerName(), $id));
-        var_dump($result);
         return $this->db->lastInsertId();
     }
 

@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" xmlns="http://www.w3.org/1999/html">
     <!--  page header -->
     <div class="col-lg-12">
         <h1 class="page-header"></h1>
@@ -20,30 +20,40 @@
                         <div class="alert alert-success">
                             <div class="form-group">
                                 <label>ID Устройства</label>
-                                <input name="device_id" type="text" class="form-control" />
+                                <input name="device-id" type="text" class="form-control" />
                             </div>
                             <em>Для добавления устройства достаточно только ID, остальные пункты не обязательны и могут быть добавлены позднее</em>
                         </div>
                         <div class="form-group">
                             <label>Организация</label>
-                            <input name="organisation" type="text" class="form-control" />
+                            <input name="organisation" type="text" class="form-control" maxlength="25"/>
                         </div>
                         <div class="form-group">
                             <label>Дата установки</label>
-                            <input name="installation_date" type="text" class="form-control" />
+                            <input name="installation-date" value="" class="datepickerTimeField form-control" maxlength="25">
+                        </div>
+                        <p class="text-primary">Адрес установки</p>
+                        <div class="form-group">
+                            <label>Город</label>
+                            <input name="installation-city" type="text" class="form-control" maxlength="100"/>
                         </div>
                         <div class="form-group">
-                            <label>Адрес установки</label>
-                            <input name="installation_address" type="text" class="form-control" />
-
+                            <label>Улица</label>
+                            <input name="installation-street" type="text" class="form-control" maxlength="100"/>
                         </div>
+                        <div class="form-group">
+                            <label>Дом</label>
+                            <input name="installation-house-number" type="text" class="form-control" maxlength="100"/>
+                        </div>
+                        </br>
+                        </br>
                         <div class="form-group">
                             <label>Инвентарный номер</label>
-                            <input name="inventory_number" type="text" class="form-control" />
+                            <input name="inventory-number" type="text" class="form-control" maxlength="30"/>
                         </div>
                         <div class="form-group">
                             <label>Установщик устройства</label>
-                            <input name="installer_name" type="text" class="form-control" />
+                            <input name="installer-name" type="text" class="form-control" maxlength="25"/>
                         </div>
                         <div class="form-group">
                             <button class="btn btn-lg btn-primary btn-block" type="submit">Добавить</button>

@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="MySQL - beerbook@localhost">
+  <database-model serializer="dbm" rdbms="MYSQL" format-version="2.6">
+    <schema id="1" name="beerbook">
+      <visible>1</visible>
+    </schema>
+    <schema id="2" name="information_schema"/>
+    <schema id="3" name="mysql"/>
+    <schema id="4" name="performance_schema"/>
+    <schema id="5" name="sys"/>
+    <table id="6" parent="1" name="actions"/>
+    <table id="7" parent="1" name="beer_channels"/>
+    <table id="8" parent="1" name="beers"/>
+    <table id="9" parent="1" name="devices"/>
+    <table id="10" parent="1" name="groups"/>
+    <table id="11" parent="1" name="logs"/>
+    <table id="12" parent="1" name="options"/>
+    <table id="13" parent="1" name="permissions"/>
+    <table id="14" parent="1" name="sanitizations"/>
+    <table id="15" parent="1" name="users"/>
+    <table id="16" parent="1" name="users_devices"/>
+    <table id="17" parent="1" name="auth_tokens"/>
+    <column id="18" parent="6" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="19" parent="6" name="action">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <key id="20" parent="6" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="21" parent="7" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="22" parent="7" name="device_id">
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="23" parent="7" name="sort_1_id">
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="24" parent="7" name="sort_2_id">
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="25" parent="7" name="sort_3_id">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="26" parent="7" name="created_at">
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <column id="27" parent="7" name="updated_at">
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <key id="28" parent="7" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="29" parent="8" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="30" parent="8" name="name">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="31" parent="8" name="description">
+      <data-type>varchar(128)|0</data-type>
+    </column>
+    <column id="32" parent="8" name="organisation">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="33" parent="8" name="degrees">
+      <data-type>tinyint(3)|0</data-type>
+    </column>
+    <column id="34" parent="8" name="density">
+      <data-type>tinyint(3)|0</data-type>
+    </column>
+    <column id="35" parent="8" name="type">
+      <data-type>enum(&apos;светлое&apos;, &apos;темное&apos;)|0</data-type>
+    </column>
+    <column id="36" parent="8" name="updated_at">
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <column id="37" parent="8" name="created_at">
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <key id="38" parent="8" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="39" parent="9" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="40" parent="9" name="device_id">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="41" parent="9" name="customer_id">
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="42" parent="9" name="organisation">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="43" parent="9" name="installation_date">
+      <data-type>timestamp|0</data-type>
+    </column>
+    <column id="44" parent="9" name="installation_city">
+      <data-type>varchar(64)|0</data-type>
+    </column>
+    <column id="45" parent="9" name="installation_street">
+      <data-type>varchar(64)|0</data-type>
+    </column>
+    <column id="46" parent="9" name="installation_house_number">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="47" parent="9" name="gps">
+      <data-type>varchar(64)|0</data-type>
+    </column>
+    <column id="48" parent="9" name="inventory_number">
+      <data-type>varchar(16)|0</data-type>
+    </column>
+    <column id="49" parent="9" name="installer_name">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="50" parent="9" name="firmware_status">
+      <data-type>enum(&apos;0&apos;, &apos;1&apos;)|0</data-type>
+    </column>
+    <column id="51" parent="9" name="sms_notifications">
+      <data-type>enum(&apos;0&apos;, &apos;1&apos;)|0</data-type>
+    </column>
+    <column id="52" parent="9" name="created_at">
+      <mandatory>1</mandatory>
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <column id="53" parent="9" name="updated_at">
+      <mandatory>1</mandatory>
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <key id="54" parent="9" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="55" parent="10" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="56" parent="10" name="name">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <key id="57" parent="10" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="58" parent="11" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="59" parent="11" name="type">
+      <mandatory>1</mandatory>
+      <data-type>enum(&apos;EV_FLUSHING_BEGIN&apos;, &apos;EV_FLUSHING_COMPLETE&apos;, &apos;EV-SANIT_BEGIN&apos;, &apos;EV_SANIT_STAGE1_COMPLETE&apos;, &apos;EV_SANIT_STAGE2_COMPLETE&apos;, &apos;EV_SANIT_STAGE3_COMPLETE&apos;, &apos;EV_ERR_WATER_LEVEL_LO&apos;, &apos;EV_ERR_WATER_NO_DATA&apos;, &apos;EV_ERR_WATER_LEVEL_OK&apos;, &apos;EV_ERR_CLEANSER_LEVEL_LO&apos;, &apos;EV_ERR_CLEANSER_NO_DATA&apos;, &apos;EV_ERR_CLEANSER_LEVEL_OK&apos;, &apos;EV_ERR_CLEANSER_LEVEL_HI&apos;, &apos;EV_ERR_CONCENTR_LEVEL_LO&apos;, &apos;EV_ERR_CONCENTR_NO_DATA&apos;, &apos;EV_ERR_CONCENTR_LEVEL_OK&apos;, &apos;EV_ERR_FLOW_LOW&apos;, &apos;EV-ERRORS_CLEARED&apos;, &apos;EV_STOP_PRESSED&apos;, &apos;EV_BEER_FLOWMETER&apos;)|0</data-type>
+    </column>
+    <column id="60" parent="11" name="channel">
+      <mandatory>1</mandatory>
+      <data-type>enum(&apos;1&apos;, &apos;2&apos;, &apos;3&apos;)|0</data-type>
+    </column>
+    <column id="61" parent="11" name="volume">
+      <mandatory>1</mandatory>
+      <data-type>int(32)|0</data-type>
+    </column>
+    <column id="62" parent="11" name="time">
+      <mandatory>1</mandatory>
+      <data-type>timestamp(4)|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP(4)</default-expression>
+    </column>
+    <column id="63" parent="11" name="device_id">
+      <mandatory>1</mandatory>
+      <data-type>varchar(64)|0</data-type>
+    </column>
+    <column id="64" parent="11" name="event_uid">
+      <mandatory>1</mandatory>
+      <data-type>int(32)|0</data-type>
+    </column>
+    <column id="65" parent="11" name="created_at">
+      <mandatory>1</mandatory>
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <key id="66" parent="11" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="67" parent="12" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="68" parent="12" name="device_id">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="69" parent="12" name="hw_config">
+      <mandatory>1</mandatory>
+      <data-type>enum(&apos;HW_BASE&apos;, &apos;HW_PLUMBING_1FM&apos;, &apos;HW_PLUMBING_4FM&apos;, &apos;HW_MIXER_1FM&apos;, &apos;HW_MIXER_4FM&apos;)|0</data-type>
+    </column>
+    <column id="70" parent="12" name="sensor_1">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="71" parent="12" name="sensor_2">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="72" parent="12" name="start_volume_1">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="73" parent="12" name="start_volume_2">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="74" parent="12" name="start_volume_3">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="75" parent="12" name="end_volume_1">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="76" parent="12" name="end_volume_2">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="77" parent="12" name="end_volume_3">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="78" parent="12" name="cleanser_volume_1">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="79" parent="12" name="cleanser_volume_2">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="80" parent="12" name="cleanser_volume_3">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="81" parent="12" name="cleanser_delay_1">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="82" parent="12" name="cleanser_delay_2">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="83" parent="12" name="cleanser_delay_3">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="84" parent="12" name="concentrate_volume">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="85" parent="12" name="water_mix_volume">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="86" parent="12" name="flow_speed_min">
+      <mandatory>1</mandatory>
+      <data-type>int(16)|0</data-type>
+    </column>
+    <column id="87" parent="12" name="flowmeter_performance_1">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="88" parent="12" name="flowmeter_performance_2">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="89" parent="12" name="flowmeter_performance_3">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="90" parent="12" name="flowmeter_performance_4">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="91" parent="12" name="sanitization_min_interval">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="92" parent="12" name="sanitization_max_interval">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="93" parent="12" name="time">
+      <mandatory>1</mandatory>
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <column id="94" parent="12" name="created_at">
+      <mandatory>1</mandatory>
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <column id="95" parent="12" name="updated_at">
+      <mandatory>1</mandatory>
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <column id="96" parent="12" name="last_dispatch">
+      <data-type>timestamp|0</data-type>
+    </column>
+    <column id="97" parent="12" name="last_time_update">
+      <data-type>timestamp|0</data-type>
+    </column>
+    <key id="98" parent="12" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="99" parent="13" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="100" parent="13" name="group_id">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="101" parent="13" name="action_id">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <key id="102" parent="13" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="103" parent="14" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="104" parent="14" name="device_uid">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="105" parent="14" name="last_sanitization_time">
+      <data-type>timestamp(4)|0</data-type>
+    </column>
+    <key id="106" parent="14" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="107" parent="15" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="108" parent="15" name="login">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="109" parent="15" name="password">
+      <mandatory>1</mandatory>
+      <data-type>varchar(120)|0</data-type>
+    </column>
+    <column id="110" parent="15" name="email">
+      <mandatory>1</mandatory>
+      <data-type>varchar(64)|0</data-type>
+    </column>
+    <column id="111" parent="15" name="first_name">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="112" parent="15" name="last_name">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="113" parent="15" name="description">
+      <mandatory>1</mandatory>
+      <data-type>varchar(120)|0</data-type>
+    </column>
+    <column id="114" parent="15" name="organisation">
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="115" parent="15" name="phone">
+      <mandatory>1</mandatory>
+      <data-type>varchar(45)|0</data-type>
+    </column>
+    <column id="116" parent="15" name="measurement">
+      <mandatory>1</mandatory>
+      <data-type>enum(&apos;liter&apos;, &apos;pint&apos;, &apos;ounce&apos;)|0</data-type>
+    </column>
+    <column id="117" parent="15" name="lang">
+      <mandatory>1</mandatory>
+      <data-type>enum(&apos;en&apos;, &apos;ru&apos;)|0</data-type>
+    </column>
+    <column id="118" parent="15" name="group_name">
+      <mandatory>1</mandatory>
+      <data-type>enum(&apos;god&apos;, &apos;superadmin&apos;, &apos;admin&apos;, &apos;technician&apos;, &apos;superuser&apos;, &apos;user&apos;)|0</data-type>
+    </column>
+    <column id="119" parent="15" name="created_at">
+      <mandatory>1</mandatory>
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <column id="120" parent="15" name="updated_at">
+      <data-type>timestamp|0</data-type>
+      <default-expression>CURRENT_TIMESTAMP</default-expression>
+    </column>
+    <index id="121" parent="15" name="login_UNIQUE">
+      <columns>login</columns>
+      <desc-columns></desc-columns>
+      <unique>1</unique>
+    </index>
+    <key id="122" parent="15" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <key id="123" parent="15" name="login_UNIQUE">
+      <columns>login</columns>
+      <underlying-index>login_UNIQUE</underlying-index>
+    </key>
+    <column id="124" parent="16" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="125" parent="16" name="device_id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <column id="126" parent="16" name="user_id">
+      <mandatory>1</mandatory>
+      <data-type>int(11)|0</data-type>
+    </column>
+    <key id="127" parent="16" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+    <column id="128" parent="17" name="id">
+      <mandatory>1</mandatory>
+      <data-type>int(11) unsigned|0</data-type>
+      <sequence-identity>1</sequence-identity>
+    </column>
+    <column id="129" parent="17" name="selector">
+      <mandatory>1</mandatory>
+      <data-type>varchar(12)|0</data-type>
+    </column>
+    <column id="130" parent="17" name="token">
+      <mandatory>1</mandatory>
+      <data-type>varchar(64)|0</data-type>
+    </column>
+    <column id="131" parent="17" name="userid">
+      <mandatory>1</mandatory>
+      <data-type>varchar(11)|0</data-type>
+    </column>
+    <column id="132" parent="17" name="expires">
+      <mandatory>1</mandatory>
+      <data-type>datetime|0</data-type>
+    </column>
+    <key id="133" parent="17" name="PRIMARY">
+      <columns>id</columns>
+      <primary>1</primary>
+    </key>
+  </database-model>
+</dataSource>

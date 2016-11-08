@@ -148,7 +148,7 @@
                         </tr>
                         <tr>
                             <td>Адрес установки</td>
-                            <td><?php echo $data['installation_address']; ?></td>
+                            <td><?php echo $data['installation_city'] . " " . $data['installation_street'] . " " . $data['installation_house_number']; ?></td>
                         </tr>
                         <tr>
                             <td>Инвентарный номер</td>
@@ -180,7 +180,11 @@
                     </table>
                     <a href="/devices/edit/<?php echo $data['id']; ?>" class="btn btn-primary margin-left"><span class="glyphicon glyphicon-edit"></span>Редактировать</a>
                     <a href="user/<?php echo $data['id']; ?>" class="btn btn-danger margin-left"><span class="glyphicon glyphicon-remove"></span>Удалить</a>
-                    <a href="/control/devices/firmware/<?php echo $data['device_id']; ?>" class="btn btn-success margin-left"><span class="glyphicon glyphicon-remove"></span>Обновить прошивку</a>
+                    <?php if($data['firmware_status'] == 0) { ?>
+                    <a href="/devices/update/<?php echo $data['device_id']; ?>" class="btn btn-success margin-left"><span class="glyphicon glyphicon-upload"></span>Обновить прошивку</a>
+                    <?php }elseif($data['firmware_status'] == 1) { ?>
+                        <a href="/devices/undoUpdate/<?php echo $data['device_id']; ?>" class="btn btn-danger margin-left"><span class="glyphicon glyphicon-upload"></span>Отменить обновление</a>
+                    <?php } ?>
                 </div>
 
             </div>

@@ -590,7 +590,7 @@ class DispenserProcessorFirmware
         $hwConfigs = array(
             'HW_BASE' => '00',
             'HW_PLUMBING' => '01',
-            'HW_MIXER_!FM' => '02',
+            'HW_MIXER_1FM' => '02',
             'HW_MIXER_4FM' => '03',
         );
         $number = array_search($congifNumber, $hwConfigs);

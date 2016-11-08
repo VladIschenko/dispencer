@@ -153,29 +153,89 @@
         return number;
     }
 
+    function calcTime(offset) {
+        var d = new Date();
+        var utc = d.getTime() - (d.getTimezoneOffset() * 60000);
+        var nd = new Date(utc + (3600000*offset));
+        return nd.toLocaleString();
+    }
+
+
     function countTimeOnDevice()
     {
         var date = Date.parse("<?php echo $data['time']; ?>");
-        var now = Date.parse(new Date());
-        var lastUpdate = Date.parse("<?php echo $data['updated_at']; ?>");
+        var now = new Date(Date.now());
+//        alert(offset);
+        now = Date.parse(now);
+//        alert(now);
+        var lastUpdate = Date.parse("<?php echo $data['last_time_update']; ?>");
         var currentTime = new Date(date+now-lastUpdate);
+        var offset = currentTime.getTimezoneOffset();
+
+
+//        alert(offset);
 
         var seconds = addZero(currentTime.getSeconds());
         var minutes = addZero(currentTime.getMinutes());
-        var hour = addZero(currentTime.getHours());
-
+        if(offset <= 0){
+            var hour = addZero(currentTime.getHours() + 2);
+        }else{
+            var hour = addZero(currentTime.getHours() + 2);
+        }
+//        alert(hour);
         var year = addZero(currentTime.getFullYear());
         var month = addZero(currentTime.getMonth());
         var day = addZero(currentTime.getDate());
 
         var ampm = (currentTime.getHours() >= 12) ? "PM" : "AM";
 
+        var testMinutes = minutes - offset;
+//        alert(testMinutes);
+        if(testMinutes > 60)
+        {
+            minutes = offset - minutes;
+            if(minutes < 0) {minutes *= -1;}
+//            alert(minutes);
+            if(minutes < 0 || minutes > 60)
+            {
+                hour = hour - Math.floor(minutes/60);
+//                alert(hour);
+                minutes = minutes%60;
+//                alert(minutes);
+                if(hour > 24)
+                {
+                    day = day - Math.floor(hour/24);
+                    hour = hour%24;
+                }
+            }
+        }else{
+            if(testMinutes < 0){
+                offset = offset * -1;
+                minutes = offset - minutes;
+                if(minutes < 0) {minutes *= -1;}
+                if(minutes < 0 || minutes > 60)
+                {
+                    hour = hour - Math.floor(minutes/60)*-1;
+                    minutes = minutes%60;
+                    if(hour > 24)
+                    {
+                        day = day - Math.floor(hour/24)*-1;
+                        hour = hour%24;
+                    }
+                }
+            }else{
+                minutes = testMinutes;
+            }
+        }
+
+
         var pageDate = document.getElementById('time');
         if(isNaN(year)){
             pageDate.innerHTML= '';
         }else{
-            pageDate.innerHTML= year + '-' + month + '-' + day + ' ' + hour + ':' + minutes + ':' + seconds + ' ' + ampm;
+            pageDate.innerHTML= year + '-' + month + '-' + day + ' ' + addZero(hour) + ':' + addZero(minutes) + ':' + seconds + ' ' + ampm;
         }
+//        alert(140%60);
         setTimeout("countTimeOnDevice();",1000);
     }
 

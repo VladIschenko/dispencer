@@ -104,7 +104,8 @@ class DispenserProcessor
 //            return;
 //        }
 
-        if(!isset($_SESSION)){
+        $device = new DeviceModel();
+        if(!isset($_SESSION) and $device->checkFirmwareStatus('00-04-a3-69-a8-03') == 1){
             session_start();
         }
 
@@ -122,7 +123,7 @@ class DispenserProcessor
 
 
 
-    //fix bug with encode maybe useless at hosting
+    //fix bug with missing zeros
     public function addZero($data)
     {
         $size = count($data) + 1;
@@ -273,9 +274,9 @@ class DispenserProcessor
 
     public function processPackage($header, $data)
     {
-        $deviceUidForChecking = implode("-", $this->addZero(unpack("C*", substr($header, 0, self::DEVICE_UID))));
+        $deviceUidForCheckingFirmware = implode("-", $this->addZero(unpack("C*", substr($header, 0, self::DEVICE_UID))));
         $device = new DeviceModel();
-        $firmwareStatus = $device->checkFirmwareStatus($deviceUidForChecking);
+        $firmwareStatus = $device->checkFirmwareStatus($deviceUidForCheckingFirmware);
         if($firmwareStatus == 1){
             $deviceUid = substr($header, 0, 6);
             $packetType = pack("C*", 4, 0);
@@ -313,7 +314,7 @@ class DispenserProcessor
 
             if($header['packet_type'] == 1)
             {
-                $data = $this->processLogs($data);
+                $data = $this->processLogs($header['device_uid'], $data);
                 $this->saveLogs($header, $data);
             }elseif ($header['packet_type'] == 2)
             {
@@ -324,7 +325,7 @@ class DispenserProcessor
                 $data = $this->processDiagnosticLogs($header, $data);
             }
 
-            $device->changeFirmwareStatusToNotRequired($deviceUidForChecking);
+            $device->changeFirmwareStatusToNotRequired($deviceUidForCheckingFirmware);
         }
     }
 
@@ -404,7 +405,7 @@ class DispenserProcessor
         return $jsonDiagnosticLog;
     }
 
-    public function processLogs($data)
+    public function processLogs($deviceUid, $data)
     {
         $packets = str_split($data, self::PACKET);
         $crcForPacket = array();
@@ -416,6 +417,27 @@ class DispenserProcessor
             $crcForPacket[$i] = dechex(Crc32::getCrc32($crc[$i]));
         }
 
+        if($crcForPacket[1] == '245a4225') //245a4225 is crc32 for empty packet like ff ff ff
+        {
+            //$crcForPacket[$i] == '245a4225'
+            $options = new OptionsModel();
+            $deviceOptions = $options->findById($deviceUid);
+            if(true)
+            {
+                //$deviceOptions['last_dispatch'] < $deviceOptions['updated_at']
+                $newOptions = $options->pack($deviceUid);
+                echo $newOptions;
+                $options->lastDispatchUpdate($deviceUid);
+
+                $f = fopen("packet2.bin", "w");
+                fwrite($f, $newOptions);
+                fclose($f);
+            }
+////				header("HTTP/1.1 400 The empty packet");
+//            }elseif(count($logs[$i]) < self::PACKET){
+//				//header("HTTP/1.1 400 Wrong size of packet");
+        }
+
         $logs = $this->addZero(unpack("C*", $data));
         $logs = array_chunk($logs, self::PACKET);
 
@@ -423,10 +445,24 @@ class DispenserProcessor
         {
             if($crcForPacket[$i] == '245a4225') //245a4225 is crc32 for empty packet like ff ff ff
             {
+                //$crcForPacket[$i] == '245a4225'
+                $options = new OptionsModel();
+                $deviceOptions = $options->findById($deviceUid);
+                if(true)
+                {
+                    //$deviceOptions['last_dispatch'] < $deviceOptions['updated_at']
+                    $newOptions = $options->pack($deviceUid);
+                    echo $newOptions;
+                    $options->lastDispatchUpdate($deviceUid);
+
+                    $f = fopen("packet2.bin", "w");
+                    fwrite($f, $newOptions);
+                    fclose($f);
+                }
 ////				header("HTTP/1.1 400 The empty packet");
 //            }elseif(count($logs[$i]) < self::PACKET){
 //				//header("HTTP/1.1 400 Wrong size of packet");
-        }else {
+            }else {
                 $leastCrc = implode("", array_reverse(array_slice($logs[$i], 14, self::LEASTCRC)));
 
 //                if($leastCrc == substr($crcForPacket[$i], -4))
@@ -467,7 +503,7 @@ class DispenserProcessor
         $address = $device->getAddressById($header['device_uid']);
         $organisation = $device->getOrganisationById($header['device_uid']);
         $phones = $user->getAllPhonesFromOrganisation($organisation);
-        for($i=0;$i<count($logs);$i++)
+        for($i=0;$i<count($logs)-1;$i++)
         {
 
 //            $msg .=  $this->processEventTypeToText($logs[$i]['event_type']) . " ";
@@ -525,7 +561,7 @@ class DispenserProcessor
                 }
             }
         }
-        header("HTTP/1.1 202 Good job");
+        //header("HTTP/1.1 202 Good job");
     }
 
 
@@ -542,16 +578,25 @@ class DispenserProcessor
  end_volume_2 = ?, end_volume_3 = ?, cleanser_volume_1 = ?, cleanser_volume_2 = ?, cleanser_volume_3 = ?,
  cleanser_delay_1 = ?, cleanser_delay_2 = ?, cleanser_delay_3 = ?, concentrate_volume = ?, water_mix_volume = ?,
  flow_speed_min = ?, 	flowmeter_performance_1 = ?, 	flowmeter_performance_2 = ?, 	flowmeter_performance_3 = ?,
- flowmeter_performance_4 = ?, sanitization_min_interval = ?, sanitization_max_interval = ?, time = ?, last_dispatch = ?
+ flowmeter_performance_4 = ?, sanitization_min_interval = ?, sanitization_max_interval = ?, time = ?,
+ last_time_update = ?
  WHERE device_id = ?");
-        }else {
+            if($options->checkTime($deviceUid) == $options->getTime())
+            {
+                $lastTimeUpdate = $this->checkLastTimeUpdate($deviceUid);
+            }else{
+                $lastTimeUpdate = date("Y-m-d H:i:s");
+            }
+        } else {
             $stmt = $this->db->prepare("INSERT INTO options(hw_config,
  sensor_1, sensor_2, start_volume_1, start_volume_2, start_volume_3, end_volume_1,
  end_volume_2, end_volume_3, cleanser_volume_1, cleanser_volume_2, cleanser_volume_3,
  cleanser_delay_1, cleanser_delay_2, cleanser_delay_3, concentrate_volume, water_mix_volume,
- flow_speed_min, 	flowmeter_performance_1, 	flowmeter_performance_2, 	flowmeter_performance_3,
- flowmeter_performance_4, sanitization_min_interval, sanitization_max_interval, time, last_dispatch, device_id)
+ flow_speed_min, flowmeter_performance_1, flowmeter_performance_2, flowmeter_performance_3,
+ flowmeter_performance_4, sanitization_min_interval, sanitization_max_interval, time,
+  last_time_update, device_id)
  values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
+            $lastTimeUpdate = date("Y-m-d H:i:s");
         }
 
         $result = $stmt->execute(
@@ -582,6 +627,7 @@ class DispenserProcessor
                 $setting['sanitization_max_interval'],
                 $setting['time'],
                 $now,
+                $lastTimeUpdate,
                 $header['device_uid'])
         );
 
@@ -668,10 +714,11 @@ class DispenserProcessor
     public function processHwConfig($congifNumber)
     {
         $hwConfigs = array(
-            'HW_BASE' => '00',
-            'HW_PLUMBING' => '01',
-            'HW_MIXER_!FM' => '02',
-            'HW_MIXER_4FM' => '03',
+            'HW_BASE' => '01',
+            'HW_PLUMBING_1FM' => '02',
+            'HW_PLUMBING_4FM' => '03',
+            'HW_MIXER_1FM' => '04',
+            'HW_MIXER_4FM' => '05',
         );
         $number = array_search($congifNumber, $hwConfigs);
         return $number;

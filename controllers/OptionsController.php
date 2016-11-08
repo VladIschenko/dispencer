@@ -60,17 +60,27 @@ class OptionsController
         {
             $fullOptions['device_id'] = $deviceUid;
         }
+        if(!isset($fullOptions['hw_config']))
+        {
+            $fullOptions['hw_config'] = 'Не установлено';
+        }
         $fullOptions['tableDeviceId'] = $device->findIdByDeviceId($deviceUid);
         echo View::render('editOptions', $fullOptions);
     }
 
-    public static function saveOptions($deviceUid)
+    public static function save($deviceUid)
     {
         $options = new OptionsModel();
         if (!isset($_SESSION['login'])) {
             $view = new View();
             echo $view->render('errors/unauthorized');
         } else {
+            if(empty($_POST['newtime'])){
+                $_POST['newtime'] = $options->checkTime($deviceUid);
+            }
+            if(empty($_POST['scheme'])){
+                $_POST['scheme'] = $options->checkHwConfig($deviceUid);
+            }
                 $options->setHwConfig($_POST['scheme']);
                 $options->setSensor1($_POST['sensor1']);
                 $options->setSensor2($_POST['sensor2']);
@@ -95,9 +105,9 @@ class OptionsController
                 $options->setFlowmeterPerformance4($_POST['flowmeterPerformance4']);
                 $options->setSanitizationMinInterval($_POST['sanitizationMinInterval']);
                 $options->setSanitizationMaxInterval($_POST['sanitizationMaxInterval']);
-                $options->setTime($_POST['date'] . $_POST['time']);
+                $options->setTime($_POST['newtime']);
                 $options->save($deviceUid);
         }
+        header('Location: /options/edit/' . $deviceUid);
     }
-
 }

@@ -19,16 +19,31 @@
                     <form method="POST" action="/beer/save">
                         <div class="form-group">
                             <label>Название</label>
-                            <input name="name" type="text" class="form-control" />
+                            <input name="name" type="text" class="form-control" maxlength="50"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Крепость</label>
+                            <input name="degrees" type="number" class="form-control" min="1" max="100"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Плотность</label>
+                            <input name="density" type="number" class="form-control" min="1" max="100"/>
+                        </div>
+                        <div class="form-group">
+                            <label>Тип</label>
+                            <select class="form-control" name="type" id="type">
+                                <option selected value="темное">Темное</option>
+                                <option value="светлое">Светлое</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Примечание</label>
-                            <input name="description" type="text" class="form-control" />
+                            <input name="description" type="text" class="form-control" maxlength="100"/>
                         </div>
                         <?php if($_SESSION['type'] == 'god'){ ?>
                         <div class="form-group">
                             <label>Организация</label>
-                            <input name="organisation" type="text" class="form-control" />
+                            <input name="organisation" type="text" class="form-control" maxlength="25"/>
                         </div>
                         <?php } ?>
                         <div class="form-group">

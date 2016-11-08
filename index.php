@@ -8,14 +8,14 @@ use Core\Db;
 
 define('ROOT', __DIR__ .'/');
 
-
 session_start();
 
 require_once ROOT . '/vendor/autoload.php';
 require_once 'config/routes.php';
 
+\Controllers\MainController::rememberMe();
 $dbConn = Db::connect();
-header("Content-Type: text/html; charset=UTF-8");
+header("Content-Type: text/html; charset=UTF8");
 $stmt = $dbConn->prepare('SET CHARSET utf8');
 $stmt->execute();
 

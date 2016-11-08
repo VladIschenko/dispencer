@@ -19,31 +19,31 @@
                         <form method="POST" action="/save-edit/<?php echo $data['id'];?>">
                             <div class="form-group">
                                 <label>Логин</label>
-                                <input name="login" type="text" class="form-control" value="<?php echo $data['login'];?>" />
+                                <input name="login" type="text" class="form-control" value="<?php echo $data['login'];?>" maxlength="25"/>
                             </div>
                             <div class="form-group">
                                 <label>Электронный адрес</label>
-                                <input name="email" type="text" class="form-control" value="<?php echo $data['email'];?>" />
+                                <input name="email" type="text" class="form-control" value="<?php echo $data['email'];?>" maxlength="50"/>
                             </div>
                             <div class="form-group">
                                 <label>Имя</label>
-                                <input name="firstname" type="text" class="form-control" value="<?php echo $data['first_name'];?>" />
+                                <input name="firstname" type="text" class="form-control" value="<?php echo $data['first_name'];?>" maxlength="50"/>
                             </div>
                             <div class="form-group">
                                 <label>Фамилия</label>
-                                <input name="lastname" type="text" class="form-control" value="<?php echo $data['last_name'];?>"/>
+                                <input name="lastname" type="text" class="form-control" value="<?php echo $data['last_name'];?>"maxlength="50"/>
                             </div>
                             <div class="form-group">
                                 <label>Описание</label>
-                                <input name="description" type="text" class="form-control" value="<?php echo $data['description'];?>"/>
+                                <input name="description" type="text" class="form-control" value="<?php echo $data['description'];?>" maxlength="100"/>
                             </div>
                             <div class="form-group">
                                 <label>Организация</label>
-                                <input name="organisation" type="text" class="form-control" value="<?php echo $data['organisation'];?>"/>
+                                <input name="organisation" type="text" class="form-control" value="<?php echo $data['organisation'];?>" maxlength="50"/>
                             </div>
                             <div class="form-group">
                                 <label>Телефон</label>
-                                <input name="phone" type="text" class="form-control" value="<?php echo $data['phone'];?>"/>
+                                <input name="phone" type="text" class="form-control" value="<?php echo $data['phone'];?>" maxlength="15"/>
                             </div>
                             <div class="form-group">
                                 <label>Единицы измерения</label>

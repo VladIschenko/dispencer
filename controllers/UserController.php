@@ -60,7 +60,7 @@ class UserController
                 $user->setPass($hash);
                 $user->setEmail($_POST['email']);
                 $user->setFirstName($_POST['firstname']);
-                $user->setLastname($_POST['lastname']);
+                $user->setLastName($_POST['lastname']);
                 $user->setDescription($_POST['description']);
                 $user->setOrganisation($_POST['organisation']);
                 $user->setPhone($_POST['phone']);
@@ -95,7 +95,7 @@ class UserController
             $user->setUsername($_POST['login']);
             $user->setEmail($_POST['email']);
             $user->setFirstName($_POST['firstname']);
-            $user->setLastname($_POST['lastname']);
+            $user->setLastName($_POST['lastname']);
             $user->setDescription($_POST['description']);
             $user->setOrganisation($_POST['organisation']);
             $user->setPhone($_POST['phone']);
@@ -175,14 +175,33 @@ class UserController
         $user = new UserModel();
         if ($user->usernameExists($_POST['login']) &&
             $user->isValidUser($_POST['login'], $_POST['password'])) {
+            if(isset($_POST['remember']))
+            {
+                $selector = base64_encode(random_bytes(9));
+                $authenticator = random_bytes(33);
+
+                setcookie(
+                    'remember',
+                    $selector.':'.base64_encode($authenticator),
+                    time() + 864000
+                );
+
+                $token = hash('sha256', $authenticator);
+                $userId = $user->getIdByLogin($_POST['login']);
+                $user->insertAuthToken($selector, $token, $userId);
+            }
+
             $_SESSION['login'] = $_POST['login'];
-            $_SESSION['id'] = UserModel::getIdByLogin($_SESSION['login']);
+            $_SESSION['id'] = $user->getIdByLogin($_SESSION['login']);
             $type = self::checkUserType();
             $_SESSION['type'] = $type;
-            echo $_SESSION['type'];
-            if (!empty($_SESSION['login'])) {
+            if (!empty($_SESSION['login']))
+            {
                 header('Location: /');
             }
+        }else{
+            $warning['title'] = "Неверная пара логин/пароль";
+            echo View::render('errors/warning', $warning);
         }
     }
 
@@ -190,6 +209,11 @@ class UserController
     {
         session_destroy();
         unset($_SESSION['login']);
+        setcookie(
+            'remember',
+            '',
+            time() - 10
+        );
         header('Location: /');
     }
 

@@ -22,6 +22,10 @@ class BeerModel
     private $name;
     private $description;
     private $organisation;
+    private $degree;
+    private $density;
+    private $type;
+
 
     public function getId()
     {
@@ -63,6 +67,36 @@ class BeerModel
         $this->organisation = $organisation;
     }
 
+    public function getDegree()
+    {
+        return $this->degree;
+    }
+
+    public function setDegree($degree)
+    {
+        $this->degree = $degree;
+    }
+
+    public function getDensity()
+    {
+        return $this->density;
+    }
+
+    public function setDensity($density)
+    {
+        $this->density = $density;
+    }
+
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    public function setType($type)
+    {
+        $this->type = $type;
+    }
+
     public function __construct()
     {
         $this->db = Db::connect();
@@ -92,10 +126,10 @@ class BeerModel
 
     public function addSort()
     {
-        $stmt = $this->db->prepare("INSERT INTO beers(name, description, organisation) 
- values (?,?,?)");
+        $stmt = $this->db->prepare("INSERT INTO beers(name, description, organisation, degrees, density, type) 
+ values (?,?,?,?,?,?)");
         $stmt->execute(array($this->getName(), $this->getDescription(),
-            $this->getOrganisation()));
+            $this->getOrganisation(), $this->getDegree(), $this->getDensity(), $this->getType()));
         return $this->db->lastInsertId();
     }
 
@@ -109,11 +143,11 @@ class BeerModel
 
     public function updateSort($id)
     {
-        $stmt = $this->db->prepare('UPDATE beers SET name = ?, description = ?, organisation = ?
+        $stmt = $this->db->prepare('UPDATE beers SET name = ?, description = ?, organisation = ?,
+        degrees = ?, density = ?, type = ?
   WHERE id = ?');
-        $result = $stmt->execute(array($this->getName(), $this->getDescription(),
-            $this->getOrganisation(), $id));
-//        var_dump($result);/
+        $stmt->execute(array($this->getName(), $this->getDescription(),
+            $this->getOrganisation(), $this->getDegree(), $this->getDensity(), $this->getType(), $id));
         return $this->db->lastInsertId();
     }
 

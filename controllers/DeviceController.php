@@ -208,10 +208,11 @@ class DeviceController
             $view = new View();
             echo $view->render('errors/unauthorized');
         } else {
+            $device = new DeviceModel();
+            $id = $device->findIdByDeviceId($id);
             $beers = new BeerModel();
             $beerList = $beers->findAllSorts();
             $sorts = $beers->findSortsOnDeviceChannels($id);
-            $device = new DeviceModel();
             $status = $device->checkSmsNotifications($id);
             $device = $device->findDeviceById($id);
             $data = array_merge($beerList, $device);
@@ -230,7 +231,21 @@ class DeviceController
         } else {
             $device = new DeviceModel();
             $device->changeFirmwareStatusToStanby($id);
-            header('Location: /control/devices');
+            header('Location: /control/devices/' . $id);
+        }
+
+    }
+
+    public static function undoUpdateFirmware($id)
+    {
+        if(!isset($_SESSION['login']))
+        {
+            $view = new View();
+            echo $view->render('errors/unauthorized');
+        } else {
+            $device = new DeviceModel();
+            $device->changeFirmwareStatusToNotRequired($id);
+            header('Location: /control/devices/' . $id);
         }
 
     }
@@ -273,39 +288,49 @@ class DeviceController
             echo $view->render('errors/unauthorized');
         } else {
             $device = new DeviceModel();
-            if ($device->deviceExists($_POST['device_id'])) {
+            if ($device->deviceExists($_POST['device-id'])) {
                 echo "device exist";
             } else {
-                $device->setDeviceId($_POST['device_id']);
+                $device->setDeviceId($_POST['device-id']);
                 if (empty($_POST['organisation'])) {
                     $device->setOrganisation(NULL);
                 } else {
                     $device->setOrganisation($_POST['organisation']);
                 }
-                if (empty($_POST['installation_date'])) {
-                    $device->setOrganisation(NULL);
+                if (empty($_POST['installation-date'])) {
+                    $device->setInstallationDate(NULL);
                 } else {
-                    $device->setInstallationDate($_POST['installation_date']);
+                    $device->setInstallationDate($_POST['installation-date']);
                 }
-                if (empty($_POST['installation_address'])) {
-                    $device->setOrganisation(NULL);
+                if (empty($_POST['installation-city'])) {
+                    $device->setInstallationCity(NULL);
                 } else {
-                    $device->setInstallationAddres($_POST['installation_address']);
+                    $device->setInstallationCity($_POST['installation-city']);
                 }
-                if (empty($_POST['inventory_number'])) {
-                    $device->setOrganisation(NULL);
+                if (empty($_POST['installation-street'])) {
+                    $device->setInstallationStreet(NULL);
                 } else {
-                    $device->setInventoryNumber($_POST['inventory_number']);
+                    $device->setInstallationStreet($_POST['installation-street']);
                 }
-                if (empty($_POST['installer_name'])) {
-                    $device->setOrganisation(NULL);
+                if (empty($_POST['installation-house-number'])) {
+                    $device->setInstallationHouseNumber(NULL);
                 } else {
-                    $device->setInstallerName($_POST['installer_name']);
+                    $device->setInstallationHouseNumber($_POST['installation-house-number']);
+                }
+                if (empty($_POST['inventory-number'])) {
+                    $device->setInventoryNumber(NULL);
+                } else {
+                    $device->setInventoryNumber($_POST['inventory-number']);
+                }
+                if (empty($_POST['installer-name'])) {
+                    $device->setInstallerName(NULL);
+                } else {
+                    $device->setInstallerName($_POST['installer-name']);
                 }
                 $device->save();
             }
         }
-//        header('Location: /control/devices');
+        header('Location: /control/devices');
     }
 
     public static function updateDevice($id)
@@ -316,13 +341,46 @@ class DeviceController
         } else {
             $device = new DeviceModel();
             $device->setDeviceId($_POST['device-id']);
-            $device->setCustomerId($_POST['customer']);
-            $device->setOrganisation($_POST['organisation']);
-            $device->setInstallationDate($_POST['installation-date']);
-            $device->setInstallationAddres($_POST['installation-address']);
-            $device->setInventoryNumber($_POST['inventory-number']);
-            $device->setInstallerName($_POST['installer']);
-//      $user->checkIsValidForRegister();
+            if (empty($_POST['customer'])) {
+                $device->setCustomerId(NULL);
+            } else {
+                $device->setCustomerId($_POST['customer']);
+            }
+            if (empty($_POST['organisation'])) {
+                $device->setOrganisation(NULL);
+            } else {
+                $device->setOrganisation($_POST['organisation']);
+            }
+            if (empty($_POST['installation-date'])) {
+                $device->setInstallationDate(NULL);
+            } else {
+                $device->setInstallationDate($_POST['installation-date']);
+            }
+            if (empty($_POST['installation-city'])) {
+                $device->setInstallationCity(NULL);
+            } else {
+                $device->setInstallationCity($_POST['installation-city']);
+            }
+            if (empty($_POST['installation-street'])) {
+                $device->setInstallationStreet(NULL);
+            } else {
+                $device->setInstallationStreet($_POST['installation-street']);
+            }
+            if (empty($_POST['installation-house-number'])) {
+                $device->setInstallationHouseNumber(NULL);
+            } else {
+                $device->setInstallationHouseNumber($_POST['installation-house-number']);
+            }
+            if (empty($_POST['inventory-number'])) {
+                $device->setInventoryNumber(NULL);
+            } else {
+                $device->setInventoryNumber($_POST['inventory-number']);
+            }
+            if (empty($_POST['installer-name'])) {
+                $device->setInstallerName(NULL);
+            } else {
+                $device->setInstallerName($_POST['installer-name']);
+            }
             $device->update($id);
             header('Location: /control/devices');
         }

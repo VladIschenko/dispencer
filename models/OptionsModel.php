@@ -8,6 +8,7 @@
 
 namespace Models;
 
+use Handler\Crc32;
 use Core\View;
 use Core\Db;
 use Controllers\UserController;
@@ -379,6 +380,13 @@ class OptionsModel
         return $time;
     }
 
+    public function checkHwConfig($deviceUid)
+    {
+        $stmt = $this->db->query("SELECT hw_config FROM options WHERE device_id = '$deviceUid';");
+        $time = $stmt->fetchColumn();
+        return $time;
+    }
+
     public function checkLastTimeUpdate($deviceUid)
     {
         $stmt = $this->db->query("SELECT last_time_update FROM options WHERE device_id = '$deviceUid';");
@@ -389,7 +397,7 @@ class OptionsModel
     public function lastDispatchUpdate($deviceUid)
     {
         $now = date("Y-m-d H:i:s");
-        $stmt = $this->db->prepare("UPDATE devices SET last_dispatch = '$now' WHERE device_id = '$deviceUid';");
+        $stmt = $this->db->prepare("UPDATE options SET last_dispatch = '$now' WHERE device_id = '$deviceUid';");
         $stmt->bindParam(':id', $id);
         $stmt->execute();
     }
@@ -407,7 +415,7 @@ class OptionsModel
  flowmeter_performance_4 = ?, sanitization_min_interval = ?, sanitization_max_interval = ?, time = ?,
  last_time_update = ?
  WHERE device_id = ?");
-            if($this->checkTime($deviceUid) == $this->getTime())
+            if($options->checkTime($deviceUid) == $options->getTime())
             {
                 $lastTimeUpdate = $this->checkLastTimeUpdate($deviceUid);
             }else{
@@ -424,8 +432,6 @@ class OptionsModel
  values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);");
             $lastTimeUpdate = date("Y-m-d H:i:s");
         }
-
-        var_dump($stmt);
 
         $result = $stmt->execute(
             array(
@@ -461,16 +467,156 @@ class OptionsModel
         var_dump($result);
     }
 
-    public function processHwConfig($congifNumber)
+    public function addZero($data)
+    {
+        $size = count($data) + 1;
+        for($i = 1; $i < $size; $i++)
+        {
+            $search = array('0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f');
+            $replace = array('00','01','02','03','04','05','06','07','08','09','0a','0b','0c','0d','0e','0f');
+            $data[$i] = dechex($data[$i]);
+            if(strlen($data[$i]) < 2){
+                $data[$i] = str_replace($search, $replace, $data[$i]);
+            }
+        }
+        return $data;
+    }
+
+    public function pack($deviceUid)
+    {
+        $packedData = ''; //the string with packed data that will be sent
+        $data = $this->findById($deviceUid);
+        //pack device_uid
+        $deviceUid = explode("-", $data['device_id']);
+        for($i=0;$i<count($deviceUid);$i++)
+        {
+            $deviceUid[$i] = hexdec($deviceUid[$i]);
+            $packedDeviceUid = pack("C*",$deviceUid[$i]);
+            $packedData .= $packedDeviceUid;
+        }
+        //pack packet type
+        $packetType = pack("C*", 2, 0);
+        $packedData .= $packetType;
+        //pack crc32
+        $crc32 = dechex(Crc32::getCrc32($packedData));
+        if(strlen($crc32) < 8)
+        {
+            $crc32 = '0' . $crc32;
+        }
+        $crc32 = array_reverse(str_split($crc32,2));
+        for($i=0;$i<count($crc32);$i++)
+        {
+            $crc32[$i] = hexdec($crc32[$i]);
+            $packedCrc32 = pack("C*",$crc32[$i]);
+            $packedData .= $packedCrc32;
+        }
+        //pack hw config, sensor1 and sensor2
+        $hwConfig = pack("C*", $this->processHwConfig($data['hw_config']));
+        $sensor1 = pack("C*", $data['sensor_1']);
+        $sensor2 = pack("C*", $data['sensor_2']);
+        $packedData .= $hwConfig . $sensor1 . $sensor2;
+        //pack the rest of the packet except unixtime
+        $dataMainPart =array_slice($data, 5, 21);
+        foreach($dataMainPart as $part)
+        {
+            $packed = $this->packPacketPart($part);
+            $packedData .= $packed;
+        }
+        //pack unixtime
+        $unixTime = $this->packRealTimeOnDevice($data['time'], $data['last_time_update']);
+        $packedData .= $unixTime;
+        $emptySpace = $this->packEmptySpace();
+        $packedData .= $emptySpace;
+
+        $crc32Full = dechex(Crc32::getCrc32(substr($packedData, 12)));
+        if(strlen($crc32Full) < 8)
+        {
+            $crc32Full = '0' . $crc32Full;
+        }
+        $crc32Full = array_reverse(str_split($crc32Full,2));
+        for($i=0;$i<count($crc32Full);$i++)
+        {
+            $crc32Full[$i] = hexdec($crc32Full[$i]);
+            $packedCrc32Full = pack("C*",$crc32Full[$i]);
+            $packedData .= $packedCrc32Full;
+        }
+
+                $f = fopen("packet.bin", "w");
+        fwrite($f, $packedData);
+        fclose($f);
+
+        return $packedData;
+    }
+
+    public function packEmptySpace() //for net options that should not be sent
+    {
+        $packedData = '';
+        for($i=0;$i<138;$i++)
+        {
+            $packedEmptyChar = pack("C*",0xff);
+            $packedData .= $packedEmptyChar;
+        }
+        return $packedData;
+    }
+
+    public function packRealTimeOnDevice($date, $lastTimeUpdate)
+    {
+        //date_default_timezone_set('Europe/Kiev');
+        $packedTime = '';
+        $date = \DateTime::createFromFormat("Y-m-d H:i:s O", $date . " +0000");
+        $date = $date->getTimestamp();
+        $lastTimeUpdate = \DateTime::createFromFormat("Y-m-d H:i:s O", $lastTimeUpdate . " +0000");
+        $lastTimeUpdate = $lastTimeUpdate->getTimestamp();
+        $now = \DateTime::createFromFormat("Y-m-d H:i:s O", date("Y-m-d H:i:s") . " +0000");
+        $now = $now->getTimestamp();
+        $date = $date + $now - $lastTimeUpdate;
+        $date = dechex($date);
+        while(strlen($date) < 8)
+        {
+            $date = '0' . $date;
+        }
+        $date = array_reverse(str_split($date,2));
+        for($i=0;$i<4;$i++)
+        {
+            $date[$i] = hexdec($date[$i]);
+            $packedPacketParts = pack("C*",$date[$i]);
+            $packedTime .= $packedPacketParts;
+        }
+        return $packedTime;
+    }
+
+    public function packPacketPart($packetPart)
+    {
+        $packedData = '';
+        $packetPart = dechex($packetPart);
+        if(strlen($packetPart) < 3)
+        {
+            $packetPart = '00' . $packetPart;
+        }elseif(strlen($packetPart) < 4){
+            $packetPart = '0' . $packetPart;
+        }
+        $packetParts = array_reverse(str_split($packetPart,2));
+        for($i=0;$i<2;$i++)
+        {
+            $packetParts[$i] = hexdec($packetParts[$i]);
+            $packedPacketParts = pack("C*",$packetParts[$i]);
+            $packedData .= $packedPacketParts;
+        }
+        return $packedData;
+    }
+
+
+    public function processHwConfig($configName)
     {
         $hwConfigs = array(
-            'HW_BASE' => '1',
-            'HW_PLUMBING' => '2',
-            'HW_MIXER_!FM' => '3',
-            'HW_MIXER_4FM' => '4',
+            '01' => 'HW_BASE',
+            '02' => 'HW_PLUMBING_1FM',
+            '03' => 'HW_PLUMBING_4FM',
+            '04' => 'HW_MIXER_1FM',
+            '05' => 'HW_MIXER_4FM',
         );
-        $number = array_search($congifNumber, $hwConfigs);
-        return $number;
+        $name = array_search($configName, $hwConfigs);
+        return $name;
     }
 
 }

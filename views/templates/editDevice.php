@@ -22,34 +22,45 @@
 
                         <div class="form-group">
                             <label>ID Устройства</label>
-                            <input name="device-id" type="text" class="form-control" value="<?php echo $data['device_id'];?>" />
+                            <input name="device-id" type="text" class="form-control" value="<?php echo $data['device_id'];?>" maxlength="20"/>
                         </div>
                         <div class="form-group">
                             <label>Заказчик</label>
-                            <input name="customer" type="text" class="form-control" value="<?php echo $data['customer_id'];?>" />
+                            <input name="customer" type="text" class="form-control" value="<?php echo $data['customer_id'];?>" maxlength="50"/>
                         </div>
                         <div class="form-group">
                             <label>Организация</label>
-                            <input name="organisation" type="text" class="form-control" value="<?php echo $data['organisation'];?>" />
+                            <input name="organisation" type="text" class="form-control" value="<?php echo $data['organisation'];?>" maxlength="50"/>
                         </div>
 
                         <?php }?>
 
                         <div class="form-group">
                             <label>Дата установки</label>
-                            <input name="installation-date" type="text" class="form-control" value="<?php echo $data['installation_date'];?>"/>
+                            <input name="installation-date" type="text" class="form-control" value="<?php echo $data['installation_date'];?>" maxlength="50"/>
+                        </div>
+                        <p class="text-primary">Адрес установки</p>
+                        <div class="form-group">
+                            <label>Город</label>
+                            <input name="installation-city" type="text" class="form-control" value="<?php echo $data['installation_city'];?>" maxlength="100"/>
                         </div>
                         <div class="form-group">
-                            <label>Адрес установки</label>
-                            <input name="installation-address" type="text" class="form-control" value="<?php echo $data['installation_address'];?>"/>
+                            <label>Улица</label>
+                            <input name="installation-street" type="text" class="form-control" value="<?php echo $data['installation_street'];?>" maxlength="100"/>
                         </div>
+                        <div class="form-group">
+                            <label>Дом</label>
+                            <input name="installation-house-number" type="text" class="form-control" value="<?php echo $data['installation_house_number'];?>" maxlength="100"/>
+                        </div>
+                        </br>
+                        </br>
                         <div class="form-group">
                             <label>Инвентарный номер</label>
-                            <input name="inventory-number" type="text" class="form-control" value="<?php echo $data['inventory_number'];?>"/>
+                            <input name="inventory-number" type="text" class="form-control" value="<?php echo $data['inventory_number'];?>" maxlength="30"/>
                         </div>
                         <div class="form-group">
                             <label>Установщик</label>
-                            <input name="installer" type="text" class="form-control" value="<?php echo $data['installer_name'];?>"/>
+                            <input name="installer-name" type="text" class="form-control" value="<?php echo $data['installer_name'];?>" maxlength="50"/>
                         </div>
                         <div class="form-group">
                             <button class="btn btn-lg btn-primary btn-block" type="submit">Сохранить</button>

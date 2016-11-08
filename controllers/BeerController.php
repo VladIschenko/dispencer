@@ -50,6 +50,9 @@ class BeerController
             $beer->setName($_POST['name']);
             $beer->setDescription($_POST['description']);
             $beer->setOrganisation($_POST['organisation']);
+            $beer->setDegree($_POST['degrees']);
+            $beer->setDensity($_POST['density']);
+            $beer->setType($_POST['type']);
             $beer->updateSort($id);
             header('Location: /beerlist');
         }
@@ -92,7 +95,11 @@ class BeerController
             $beer->setName($_POST['name']);
             $beer->setDescription($_POST['description']);
             $beer->setOrganisation($_POST['organisation']);
+            $beer->setDegree($_POST['degrees']);
+            $beer->setDensity($_POST['density']);
+            $beer->setType($_POST['type']);
             $beer->addSort();
+            var_dump($_POST);
             header('Location: /beerlist');
         }
     }

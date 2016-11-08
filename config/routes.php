@@ -38,8 +38,9 @@ return $routes = array(
 
     //Routes for Devices
     '/control/devices' => 'DeviceController/findAllDevices',
-    '/control/devices/:num' => 'DeviceController/deviceProfileView/$1',
-    '/control/devices/firmware/:any'  => 'DeviceController/updateFirmware/$1',
+    '/control/devices/:any' => 'DeviceController/deviceProfileView/$1',
+    '/devices/update/:any'  => 'DeviceController/updateFirmware/$1',
+    '/devices/undoUpdate/:any'  => 'DeviceController/undoUpdateFirmware/$1',
     '/control/devices/sms/:num'  => 'DeviceController/changeSmsNotification/$1',
     '/control/devices/add'  => 'DeviceController/addDevice',
     '/control/devices/save'  => 'DeviceController/saveDevice',
@@ -67,7 +68,7 @@ return $routes = array(
     '/control/options' => 'OptionsController/ViewFullOptionslist',
     '/control/options/:any' => 'OptionsController/ViewFullOptionsForDevice/$1',
     '/options/edit/:any' => 'OptionsController/editOptions/$1',
-    '/options/update/:any' => 'OptionsController/saveOptions/$1',
+    '/options/update/:any' => 'OptionsController/save/$1',
 
     //Routes for Stats
 

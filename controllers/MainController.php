@@ -29,8 +29,31 @@ class MainController
         if(isset($_SESSION['login']))
         {
             self::mapView();
-        } else {
+        }else
+        {
             UserController::loginFormView();
+        }
+    }
+
+    public static function rememberMe()
+    {
+        if(empty($_SESSION['login']) && !empty($_COOKIE['remember']))
+        {
+            $user = new UserModel();
+            list($selector, $authenticator) = explode(':', $_COOKIE['remember']);
+            $authData = $user->findAuthToken($selector);
+
+            if(hash_equals($authData['token'], hash('sha256', base64_decode($authenticator))))
+            {
+                $_SESSION['login'] = $user->getLoginById($authData['userid']);
+                $_SESSION['id'] = $authData['userid'];
+                $type = UserController::checkUserType();
+                $_SESSION['type'] = $type;
+                if (!empty($_SESSION['login']))
+                {
+//                    header("Refresh:0");
+                }
+            }
         }
     }
 

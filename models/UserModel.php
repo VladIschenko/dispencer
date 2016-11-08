@@ -21,7 +21,7 @@ class UserModel {
     private $pass;
     private $email;
     private $firstName;
-    private $lastname;
+    private $lastName;
     private $description;
     private $organisation;
     private $phone;
@@ -76,14 +76,14 @@ class UserModel {
         $this->firstName = $firstName;
     }
 
-    public function getLastname()
+    public function getLastName()
     {
-        return $this->lastname;
+        return $this->lastName;
     }
 
-    public function setLastname($lastname)
+    public function setLastName($lastName)
     {
-        $this->lastname = $lastname;
+        $this->lastName = $lastName;
     }
 
     public function getDescription()
@@ -265,6 +265,16 @@ class UserModel {
         return $id;
     }
 
+    public static function getLoginById($id)
+    {
+        $db = Db::connect();
+        $stmt = $db->prepare("SELECT login FROM users WHERE id = :id");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $login = $stmt->fetchColumn();
+        return $login;
+    }
+
     public function getPhoneByDeviceId($deviceId)
     {
         $stmt = $this->db->query("SELECT phone FROM users, devices WHERE users.id = devices.customer_id AND devices.device_id = '$deviceId';");
@@ -288,7 +298,7 @@ class UserModel {
  email, first_name, last_name, description, organisation, phone, measurement, lang, group_name, created_at) 
  values (?,?,?,?,?,?,?,?,?,?,?,?)");
         $result = $stmt->execute(array($this->getUsername(), $this->getPass(), $this->getEmail(), $this->getFirstName(),
-            $this->getLastname(), $this->getDescription(), $this->getOrganisation(), $this->getPhone(), $this->getMeasurement(),
+            $this->getLastName(), $this->getDescription(), $this->getOrganisation(), $this->getPhone(), $this->getMeasurement(),
             $this->getLanguage(), $this->getGroupName(), $now));
         //echo $result;
         return $this->db->lastInsertId();
@@ -302,7 +312,7 @@ class UserModel {
         $username = $this->getUsername();
         $email = $this->getEmail();
         $firstName = $this->getFirstName();
-        $lastName = $this->getLastname();
+        $lastName = $this->getLastName();
         $description = $this->getDescription();
         $organisation = $this->getOrganisation();
         $phone = $this->getPhone();
@@ -370,6 +380,20 @@ AND action = :action;");
         return $phones;
     }
 
+    public function insertAuthToken($selector, $token, $userId)
+    {
+        $stmt = $this->db->prepare("INSERT INTO auth_tokens (selector, token, userid, expires) VALUES (?, ?, ?, ?)");
+        $stmt->execute(array($selector, $token, $userId, date('Y-m-d\TH:i:s', time() + 864000)));
+    }
+
+    public function findAuthToken($selector)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM auth_tokens WHERE selector = :selector");
+        $stmt->bindParam(':selector', $selector);
+        $stmt->execute();
+        $authData = $stmt->fetch();
+        return $authData;
+    }
 
         //Session functions
 

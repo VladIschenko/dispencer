@@ -20,7 +20,7 @@ class Db extends PDO {
 
     public static function connect(){
         try {
-            self::$dbConn = new PDO('mysql:host=localhost:3306;dbname=beerbook', self::$user, self::$pass);
+            self::$dbConn = new PDO('mysql:host=localhost:3306;dbname=beerbook', self::$user, self::$pass, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"));
             return self::$dbConn;
         } catch (PDOException $e) {
             echo 'Could not connect to the database '.$e->getMessage();

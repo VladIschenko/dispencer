@@ -53,6 +53,9 @@
                         <?php if($_SESSION['type'] == 'god'){ ?>
                             <th>Организация</th>
                         <?php } ?>
+                        <th>Крепость, гр</th>
+                        <th>Плотность</th>
+                        <th>Тип</th>
 
                     </tr>
                     </thead>
@@ -78,6 +81,10 @@
                             <?php if($_SESSION['type'] == 'god'){ ?>
                                 <td><?php echo $beer['organisation']; ?></td>
                             <?php } ?>
+                            <td><?php echo $beer['degrees']; ?></td>
+                            <td><?php echo $beer['density']; ?></td>
+                            <td><?php echo $beer['type']; ?></td>
+
                         </tr>
                     <?php } ?>
                     </tbody>

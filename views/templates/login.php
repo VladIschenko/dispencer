@@ -31,16 +31,16 @@
                     <form method="POST" action="/login">
                         <fieldset>
                             <div class="form-group">
-                                <input class="form-control" placeholder="Логин" name="login" type="text" autofocus>
+                                <input class="form-control" placeholder="Логин" name="login" type="text" maxlength="20" autofocus>
                             </div>
                             <div class="form-group">
-                                <input class="form-control" placeholder="Пароль" name="password" type="password" value="">
+                                <input class="form-control" placeholder="Пароль" name="password" type="password" maxlength="20" value="">
                             </div>
-<!--                            <div class="checkbox">-->
-<!--                                <label>-->
-<!--                                    <input name="remember" type="checkbox" value="Remember Me">Remember Me-->
-<!--                                </label>-->
-<!--                            </div>-->
+                            <div class="checkbox">
+                                <label>
+                                    <input name="remember" type="checkbox" value="1">Запомнить меня
+                                </label>
+                            </div>
                             <!-- Change this to a button or input when using this as a form -->
                             <button class="btn btn-lg btn-success btn-block" type="submit">Войти</button>
                         </fieldset>

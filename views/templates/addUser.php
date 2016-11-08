@@ -19,15 +19,15 @@
                                 <form method="POST" action="/save-user">
                                     <div class="form-group">
                                         <label>Логин</label>
-                                        <input name="login" type="text" class="form-control" />
+                                        <input name="login" type="text" class="form-control" maxlength="25"/>
                                     </div>
                                     <div class="form-group">
                                         <label>Пароль</label>
-                                        <input name="password" type="password" class="form-control" />
+                                        <input name="password" type="password" class="form-control" maxlength="25"/>
                                     </div>
                                     <div class="form-group">
                                         <label>Повторите пароль</label>
-                                        <input name="repeat_password" type="password" class="form-control" />
+                                        <input name="repeat_password" type="password" class="form-control" maxlength="25"/>
                                     </div>
                                     <div class="form-group">
                                         <label>Тип пользователя</label>
@@ -42,27 +42,27 @@
                                     </div>
                                     <div class="form-group">
                                         <label>Электронный адрес</label>
-                                        <input name="email" type="text" class="form-control" />
+                                        <input name="email" type="text" class="form-control" maxlength="50"/>
                                     </div>
                                     <div class="form-group">
                                         <label>Имя</label>
-                                        <input name="firstname" type="text" class="form-control" />
+                                        <input name="firstname" type="text" class="form-control" maxlength="50"/>
                                     </div>
                                     <div class="form-group">
                                         <label>Фамилия</label>
-                                        <input name="lastname" type="text" class="form-control" />
+                                        <input name="lastname" type="text" class="form-control" maxlength="50"/>
                                     </div>
                                     <div class="form-group">
                                         <label>Описание</label>
-                                        <input name="description" type="text" class="form-control" />
+                                        <input name="description" type="text" class="form-control" maxlength="100"/>
                                     </div>
                                     <div class="form-group">
                                         <label>Организация</label>
-                                        <input name="organisation" type="text" class="form-control" />
+                                        <input name="organisation" type="text" class="form-control" maxlength="50"/>
                                     </div>
                                     <div class="form-group">
                                         <label>Телефон</label>
-                                        <input name="phone" type="text" class="form-control" />
+                                        <input name="phone" type="text" class="form-control" maxlength="15"/>
                                     </div>
                                     <div class="form-group">
                                         <label>Единицы измерения</label>

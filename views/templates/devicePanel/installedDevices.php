@@ -100,7 +100,7 @@
                                         </li>
                                         <li><a href="/control/options/<?php echo $device['device_id']; ?>"><span class="fa fa-wrench"></span>Настройки</a>
                                         </li>
-                                        <li><a href="/control/devices/<?php echo $device['id']; ?>"><span class="glyphicon glyphicon-open"></span>Управление</a>
+                                        <li><a href="/control/devices/<?php echo $device['device_id']; ?>"><span class="glyphicon glyphicon-open"></span>Управление</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -109,7 +109,7 @@
                             <td><?php echo $device['device_id']; ?></td>
                             <td><a href="/user/<?php echo $device['customer_id']; ?>"><?php echo $device['login']; ?></a></td>
                             <td><?php echo $device['installation_date']; ?></td>
-                            <td><?php echo $device['installation_address']; ?></td>
+                            <td><?php echo $device['installation_city'] . " " . $device['installation_street'] . " " . $device['installation_house_number'] ; ?></td>
                             <td><?php echo $device['inventory_number']; ?></td>
                             <td><?php echo $device['installer_name']; ?></td>
                         </tr>
